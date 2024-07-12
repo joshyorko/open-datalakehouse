@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: superset
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://apache.github.io/superset
+    chart: superset
+    targetRevision: 0.8.3  # Adjust version as needed
+    helm:
+      valueFiles:
+        - ../../application-charts/superset/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-lakehouse
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

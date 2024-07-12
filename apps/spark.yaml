@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: spark
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/open-datalakehouse/application-charts
+    targetRevision: HEAD
+    path: spark
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-lakehouse
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

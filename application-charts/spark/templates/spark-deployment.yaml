@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.33.0 (3ce457399)
+  labels:
+    io.kompose.service: spark
+  name: spark
+  namespace: data-lakehouse
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: spark
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.33.0 (3ce457399)
+      labels:
+        io.kompose.network/iceberg-env: "true"
+        io.kompose.service: spark
+    spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 1000:1000 /home/docker/work"]
+          volumeMounts:
+            - mountPath: /home/docker/work
+              name: notebook-data
+      containers:
+        - image: ghcr.io/joshyorko/datalake:spark
+          name: spark
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8888
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /home/docker/work
+              name: notebook-data
+      volumes:
+        - name: notebook-data
+          persistentVolumeClaim:
+            claimName: notebook-data
+      imagePullSecrets:
+        - name: ghcr-login
+      restartPolicy: Always

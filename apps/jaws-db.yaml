@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: jaws-db
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.bitnami.com/bitnami
+    chart: postgresql
+    targetRevision: 12.5.5  # Adjust version as needed
+    helm:
+      valueFiles:
+        - ../../application-charts/jaws-db/values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-lakehouse
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

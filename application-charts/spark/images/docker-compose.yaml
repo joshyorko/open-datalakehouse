@@ -1,0 +1,23 @@
+
+services:
+
+
+
+  spark_notebook:
+    image: ghcr.io/joshyorko/datalake:spark
+    volumes:
+      - notebook-pv:/home/jovyan/work
+    build: .
+    ports: 
+      - 8888:8888
+
+    container_name: notebook
+
+volumes:
+  notebook-pv:
+    external: true
+    
+networks:
+  default:
+    name: iceberg_env
+    driver: bridge 

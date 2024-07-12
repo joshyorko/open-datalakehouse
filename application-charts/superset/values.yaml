@@ -1,0 +1,72 @@
+# values.yaml
+
+# PostgreSQL settings
+postgresql:
+  postgresqlPassword: superset
+  persistence:
+    enabled: true
+    
+    accessModes:
+      - ReadWriteOnce
+    size: 8Gi
+
+# Redis settings
+redis:
+  master:
+    persistence:
+      enabled: true
+      
+      accessModes:
+        - ReadWriteOnce
+      size: 8Gi
+
+# Configuration overrides
+configOverrides:
+  secret: |
+    SECRET_KEY = 'SUPERSECRETTOKEN'
+
+# Superset node settings
+supersetNode:
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Superset worker settings
+supersetWorker:
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# Enable Celery Beat
+supersetCeleryBeat:
+  enabled: true
+
+
+
+# Bootstrap script to install additional packages
+bootstrapScript: |
+  #!/bin/bash
+  pip install sqlalchemy_dremio &&\
+  if [ ! -f ~/bootstrap ]; then echo "Running Superset with uid {{ .Values.runAsUser }}" > ~/bootstrap; fi
+
+# Extra environment variables
+extraEnv: {}
+
+# Extra secret environment variables
+extraSecretEnv: {}
