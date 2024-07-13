@@ -8,7 +8,7 @@ open-datalakehouse/
 │   │   └── values.yaml
 │   ├── nessie/
 │   │   └── values.yaml
-│   ├── jaws-db/
+│   ├── postgres-db/
 │   │   └── values.yaml
 │   ├── superset/
 │   │   └── values.yaml
@@ -18,7 +18,7 @@ open-datalakehouse/
 ├── apps/
 │   ├── dremio.yaml
 │   ├── nessie.yaml
-│   ├── jaws-db.yaml
+│   ├── postgres-db.yaml
 │   ├── superset.yaml
 │   └── spark.yaml
 │

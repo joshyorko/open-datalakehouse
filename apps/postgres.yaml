@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: jaws-db
+  name: postgres-db
   namespace: argocd
 spec:
   project: default
@@ -11,7 +11,7 @@ spec:
     targetRevision: 12.5.5  # Adjust version as needed
     helm:
       valueFiles:
-        - ../../application-charts/jaws-db/values.yaml
+        - ../../application-charts/postgres-db/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
