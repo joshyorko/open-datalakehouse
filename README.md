@@ -1,6 +1,5 @@
 # Open Datalakehouse Repository Structure
 
-![Logo](utils/logo.webp)
 
 ## The Tutorial: A Step-by-Step Guide to Controlled Chaos
 
@@ -11,6 +10,8 @@ Prerequisites:
 - Helm (because manually managing Kubernetes resources is like trying to herd cats while blindfolded)
 
 For this tutorial, we'll focus on Minikube. Don't worry, EKS is coming but only at the end.
+
+![Logo](utils/logo.webp)
 
 ### Step 1: Install Minikube
 
