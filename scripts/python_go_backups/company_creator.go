@@ -12,7 +12,7 @@ import (
 	"github.com/xitongsys/parquet-go/writer"
 )
 
-// ... rest of your code ...
+
 type SoftwareCompany struct {
 	Name      string `parquet:"name=name, type=BYTE_ARRAY, convertedtype=UTF8"`
 	Industry  string `parquet:"name=industry, type=BYTE_ARRAY, convertedtype=UTF8"`
