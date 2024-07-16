@@ -1,5 +1,5 @@
 # Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes
-
+![Logo](utils/nessie_dremio_sad.png)
 ## Technologies Used:
 
 ArgoCD, Minio, Dremio, Cert-Manager, Let's Encrypt, Apache Superset, Project Nessie, PostgreSQL, Spark, Nginx
@@ -15,7 +15,7 @@ Prerequisites:
 
 For this tutorial, we'll focus on Minikube. Don't worry, EKS is coming but only at the end.
 
-![Logo](utils/nessie_dremio_sad.png)
+
 
 ### Step 1: Install Minikube
 
