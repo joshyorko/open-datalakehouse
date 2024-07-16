@@ -1,7 +1,11 @@
-# Open Datalakehouse - ArgoCD, Minio, Dremio, Cert-Manager, Let's Encrypt, Apache Superset, Project Nessie, PostgreSQL, Spark, Nginx
+# Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes
 
+## Technologies Used:
+
+ArgoCD, Minio, Dremio, Cert-Manager, Let's Encrypt, Apache Superset, Project Nessie, PostgreSQL, Spark, Nginx
 
 ## The Tutorial: A Step-by-Step Guide to Controlled Chaos
+
 
 Prerequisites:
 - A Computer/s (one that doesn't burst into flames at the mention of Kubernetes)
