@@ -56,69 +56,6 @@ Stay tuned for more pain... I mean, progress!
 
 
 
-```
-├── README.md
-├── app-of-apps.yaml
-├── application-charts
-│   ├── cert-manager
-│   │   ├── cert-manager-values.yaml
-│   │   ├── certificates
-│   │   │   └── yorko-io-certificate.yaml
-│   │   └── issuers
-│   │       ├── lets-encrypt-production.yaml
-│   │       └── lets-encrypt-staging.yaml
-│   ├── dremio
-│   │   └── values.yaml
-│   ├── nessie
-│   │   └── values.yaml
-│   ├── nginx
-│   │   └── nginx-values.yaml
-│   ├── postgres-db
-│   │   └── postgres-values.yaml
-│   ├── spark
-│   │   ├── Chart.yaml
-│   │   ├── README.md
-│   │   ├── images
-│   │   │   ├── Dockerfile
-│   │   │   ├── dock.testing
-│   │   │   ├── docker-compose.yaml
-│   │   │   └── notebooks
-│   │   │       ├── nessie.ipynb
-│   │   │       └── postgresql-42.2.23.jar
-│   │   ├── templates
-│   │   │   ├── ghcr-secret.example
-│   │   │   ├── notebook-data-persistentvolumeclaim.yaml
-│   │   │   ├── spark-deployment.yaml
-│   │   │   ├── spark-pv.yaml
-│   │   │   └── spark-service.yaml
-│   │   └── values.yaml
-│   └── superset
-│       └── values.yaml
-├── apps
-│   ├── cert-manager.yaml
-│   ├── dremio.yaml
-│   ├── nessie.yaml
-│   ├── postgres.yaml
-│   ├── spark.yaml
-│   └── superset.yaml
-├── scripts
-│   ├── main_minio.go
-│   ├── python_go_backups
-│   │   ├── app.py
-│   │   ├── company.py
-│   │   ├── company_creator.go
-│   │   ├── company_minio.py
-│   │   ├── ollama-api.py
-│   │   └── requirements.txt
-│   └── spark-jobs
-│       ├── gold-lake-nessie-iceberg.py
-│       └── silver-lake-nessie-iceberg.py
-└── utils
-    └── create_ghcr_secret.sh
-
-18 directories, 42 files
-```
-
 ## Directory Explanations:
 
 1. `application-charts/`: Contains subdirectories for each application, each with its own `values.yaml` file for Helm chart configuration.
