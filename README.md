@@ -15,7 +15,7 @@ Prerequisites:
 
 For this tutorial, we'll focus on Minikube. Don't worry, EKS is coming but only at the end.
 
-![Logo](utils/logo.webp)
+![Logo](utils/nessie_dremio_sad.png)
 
 ### Step 1: Install Minikube
 
