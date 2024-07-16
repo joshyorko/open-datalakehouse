@@ -1,30 +1,117 @@
 # Open Datalakehouse Repository Structure
 
+<img src="utils/logo.webp" width="850" height="500" alt="Logo">
+
+## The Tutorial: A Step-by-Step Guide to Controlled Chaos
+
+Prerequisites:
+- A Computer/s (one that doesn't burst into flames at the mention of Kubernetes)
+- A Kubernetes Cluster (Minikube for the faint of heart, [TechnoTim's k3s-ansible](https://github.com/techno-tim/k3s-ansible) for the brave)
+- MetalLB (unless you're on EKS, in which case, they've got you covered, bro)
+- Helm (because manually managing Kubernetes resources is like trying to herd cats while blindfolded)
+
+For this tutorial, we'll focus on Minikube. Don't worry, EKS is coming but only at the end.
+
+### Step 1: Install Minikube
+
+First, let's get Minikube up and running. Choose your poison:
+
+```bash
+# For macOS
+brew install minikube
+
+# For Linux
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# For Windows (using PowerShell)
+New-Item -Path 'c:\' -Name 'minikube' -ItemType Directory -Force
+Invoke-WebRequest -OutFile 'c:\minikube\minikube.exe' -Uri 'https://github.com/kubernetes/minikube/releases/latest/download/minikube-windows-amd64.exe'
+Add-MemberPath 'c:\minikube'
 ```
-open-datalakehouse/
-│
-├── application-charts/
-│   ├── dremio/
+
+### Step 2: Install Helm
+
+Because who doesn't love another layer of abstraction?
+
+```bash
+# For macOS
+brew install helm
+
+# For Linux
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+# For Windows (using PowerShell)
+choco install kubernetes-helm
+```
+
+### Step 3: Install ArgoCD and ArgoCD CLI (TODO LATER)
+
+Stay tuned for more pain... I mean, progress!
+
+
+
+```
+├── README.md
+├── app-of-apps.yaml
+├── application-charts
+│   ├── cert-manager
+│   │   ├── cert-manager-values.yaml
+│   │   ├── certificates
+│   │   │   └── yorko-io-certificate.yaml
+│   │   └── issuers
+│   │       ├── lets-encrypt-production.yaml
+│   │       └── lets-encrypt-staging.yaml
+│   ├── dremio
 │   │   └── values.yaml
-│   ├── nessie/
+│   ├── nessie
 │   │   └── values.yaml
-│   ├── postgres-db/
+│   ├── nginx
+│   │   └── nginx-values.yaml
+│   ├── postgres-db
+│   │   └── postgres-values.yaml
+│   ├── spark
+│   │   ├── Chart.yaml
+│   │   ├── README.md
+│   │   ├── images
+│   │   │   ├── Dockerfile
+│   │   │   ├── dock.testing
+│   │   │   ├── docker-compose.yaml
+│   │   │   └── notebooks
+│   │   │       ├── nessie.ipynb
+│   │   │       └── postgresql-42.2.23.jar
+│   │   ├── templates
+│   │   │   ├── ghcr-secret.example
+│   │   │   ├── notebook-data-persistentvolumeclaim.yaml
+│   │   │   ├── spark-deployment.yaml
+│   │   │   ├── spark-pv.yaml
+│   │   │   └── spark-service.yaml
 │   │   └── values.yaml
-│   ├── superset/
-│   │   └── values.yaml
-│   └── spark/
+│   └── superset
 │       └── values.yaml
-│
-├── apps/
+├── apps
+│   ├── cert-manager.yaml
 │   ├── dremio.yaml
 │   ├── nessie.yaml
-│   ├── postgres-db.yaml
-│   ├── superset.yaml
-│   └── spark.yaml
-│
-├── app-of-apps.yaml
-│
-└── README.md
+│   ├── postgres.yaml
+│   ├── spark.yaml
+│   └── superset.yaml
+├── scripts
+│   ├── main_minio.go
+│   ├── python_go_backups
+│   │   ├── app.py
+│   │   ├── company.py
+│   │   ├── company_creator.go
+│   │   ├── company_minio.py
+│   │   ├── ollama-api.py
+│   │   └── requirements.txt
+│   └── spark-jobs
+│       ├── gold-lake-nessie-iceberg.py
+│       └── silver-lake-nessie-iceberg.py
+└── utils
+    └── create_ghcr_secret.sh
+
+18 directories, 42 files
 ```
 
 ## Directory Explanations:
@@ -35,5 +122,6 @@ open-datalakehouse/
 
 3. `app-of-apps.yaml`: The main ArgoCD application that manages all other applications.
 
-4. `README.md`: Project documentation and instructions.
-```
+4. `scripts/`: Contains scripts for managing backups and running Spark jobs and creating Fake data for the datalakehouse.'
+
+5. `utils/`: Contains utility scripts for managing the repository.
