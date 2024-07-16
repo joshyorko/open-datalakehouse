@@ -1,0 +1,110 @@
+# Part 1: How to Break Your Kubernetes Cluster (and Your Sleep Schedule)
+
+It's 2 AM. The soft glow of my monitor illuminates a face that's equal parts determination and existential dread. My wife's probably wondering if she married a man or a particularly verbose cron job. But here I am, staring into the abyss and silently cursing myself for believing this was a good idea.of what I've christened "The Great Data Lake Disaster: Where Dreams Go to Drown."
+
+The mission? Replace AWS Glue and save the company some cash. Sounds simple, right? Cut costs, be the hero, maybe finally get that "World's Okayest Software Engineer" mug. Just when I thought I had my perfect open source stack (ty @AlexMerced for your countless Docker tutorials, I realized it had drifted into  But as I wade through a quagmire of Kubernetes manifests and Spark-Nessie integrations that are about as cooperative as my two-year-old at bath time,I had  I'm having an epiphany.
+
+I might be in way over my head. And I can't even drown because I forgot to configure the persistent volumes correctly.
+
+Every decision feels like a game of Russian roulette with my career:
+* Too many nodes? Congratulations, you've just invented the world's most expensive space heater.
+* Too few? Watch your cluster crumble faster than my resolve.
+* Wrong Kubernetes version? Hope you enjoy compatibility issues more than your favorite TV show.
+* Mismatched Spark and Nessie versions? You've got a better chance of successfully getting my children to eat their dinner.
+
+Just when I thought I'd finally tamed this digital beast, reality decided to dropkick me in the face. I hadn't installed an EBS driver to manage my persistent volume claims. ARE YOU F****** KIDDING ME RIGHT NOW?! 
+
+The hits keep coming like a greatest hits album nobody asked for. WHY DOESN'T THE LATEST VERSION OF KUBERNETES SUPPORT THE RANCHER STABLE HELM CHART? Oh, and the pièce de résistance of this cluster catastrophe? I FORGOT TO INSTALL COREDNS. At this point, I'm not building a data lake; I'm digging myself a data grave.
+
+My ChatGPT and Claude debug histories have become a labyrinth of despair that would make Kafka proud. It's becoming painfully clear that this whole endeavor has about as much chance of success as a chocolate teapot.
+
+In a fit of masochism that can only be described as "peak engineer," I decided to augment @AlexMerced's WORKING Spark Dockerfile to work with the latest versions of Spark, Iceberg, and Nessie. Because apparently, I didn't think this project was unstable enough already. 
+
+As the first rays of sunlight begin to mock me through the office window, I realize there's only one thing left to do: `eksctl delete cluster`. Time to put this nightmare to bed and maybe, just maybe, catch a few hours of sleep before I have to face the music at standup. I can already hear it: "So, how's that cost-saving initiative going?"
+
+# Part 2: Minikube - Because Sometimes You Need to Start Small to Fail Big
+
+After the EKS fiasco that shall forever be known as "The Kubernetes Katastrophe: A Comedy of Errors," I decided it was time to take a step back. Way back. Like, "maybe I should have picked a different career path" back. Enter Minikube: the Kubernetes equivalent of a kiddie pool.
+
+But before we dive into this shallow end of container orchestration, let me save you some trouble. I've read more documentation than there are stars in the observable universe. Here's the distilled wisdom of my sleepless nights:
+
+1. **ArgoCD**: GitOps for people who think `git push --force` is a valid life strategy.
+2. **[Minio](https://min.io/docs/minio/container/index.html)**: Object storage that's more reliable than my commitment to this project.
+3. **[Dremio](https://docs.dremio.com/)**: For when you need to query data faster than you can question your life choices.
+4. **Cert-Manager & Let's Encrypt**: Because nothing says "I've got my life together" like proper SSL certificates on a cluster that's held together with duct tape and wishful thinking.
+5. **Apache Superset**: Visualization tools for when you need to see just how deep this rabbit hole goes.
+6. **Project Nessie**: Version control for data that's more forgiving than your boss after this debacle.
+
+After sifting through more Helm charts than a sailor with severe OCD, I settled on Bitnami charts for PostgreSQL and Dremio. Pro tip: Dremio comes bundled with Minio in the Bitnami install. I didn't learn that until after I'd already wasted hours trying to deploy Minio separately. Here's a nugget of wisdom: YOU DON'T NEED TO INSTALL THE MINIO OPERATOR IF YOU'RE ONLY RUNNING ONE INSTANCE OF MINIO. You're welcome. Add that to your "things I wish I knew before I started" list, right under "maybe I should have chosen a different career."
+
+In a fit of masochism that can only be described as "peak engineer," I decided to augment @AlexMerced's WORKING Spark Dockerfile to work with the latest versions of Spark, Iceberg, and Nessie. Because apparently, I didn't think this project was unstable enough already. 
+
+And let's not forget the unsung hero of this tragedy, TechnoTim. His open-source project for spinning up a k3s cluster is a beacon of hope in the stormy seas of my incompetence. Tim, if you're reading this, your project is the only thing that's worked consistently in this entire ordeal. You're the real MVP.
+
+Now, let's dive into the tutorial. Brace yourselves, it's about to get real.
+
+# The Tutorial: A Step-by-Step Guide to Controlled Chaos
+
+Prerequisites:
+- A Computer/s (preferably one that doesn't burst into flames when you mention Kubernetes)
+- A Kubernetes Cluster (Minikube for the faint of heart, [TechnoTim's k3s-ansible](https://github.com/techno-tim/k3s-ansible) for the brave)
+- MetalLB (unless you're on EKS, in which case, they've got you covered, bro)
+- Helm ((This is stupid, either add something smart or explain why)because apparently, we love adding more complexity to our lives)
+
+For this tutorial, we'll focus on Minikube. Don't worry, EKS is coming but only at the end.enthusiasts, we'll throw you a bone at the end.
+
+## Step 1: Install Minikube
+
+First, let's get Minikube up and running. Because why not start our journey with a mini version of the thing that's been causing us sleepless nights?
+
+```bash
+# For macOS
+brew install minikube
+
+# For Linux
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# For Windows (using PowerShell)
+New-Item -Path 'c:\' -Name 'minikube' -ItemType Directory -Force
+Invoke-WebRequest -OutFile 'c:\minikube\minikube.exe' -Uri 'https://github.com/kubernetes/minikube/releases/latest/download/minikube-windows-amd64.exe'
+Add-MemberPath 'c:\minikube'
+```
+
+## Step 2: Install Helm
+
+Because managing Kubernetes resources manually is so last year.
+
+```bash
+# For macOS
+brew install helm
+
+# For Linux
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+# For Windows (using PowerShell)
+choco install kubernetes-helm
+```
+
+## Step 3: Install ArgoCD and ArgoCD CLI 
+
+We'll save the full ArgoCD setup for later, but let's get the CLI installed:
+
+```bash
+# For macOS
+brew install argocd
+
+# For Linux
+curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
+
+# For Windows (using PowerShell)
+$version = (Invoke-RestMethod https://api.github.com/repos/argoproj/argo-cd/releases/latest).tag_name
+$url = "https://github.com/argoproj/argo-cd/releases/download/" + $version + "/argocd-windows-amd64.exe"
+$output = "$env:USERPROFILE\argocd.exe"
+Invoke-WebRequest -Uri $url -OutFile $output
+```
+
+And there you have it! The foundation of our data lake adventure is laid. In our next thrilling installment, we'll dive into actually setting up these tools and watching our sanity slowly slip away. Stay tuned for "YAML and Consequences: A Tragedy in Multiple Acts."
+

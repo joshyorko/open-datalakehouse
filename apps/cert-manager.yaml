@@ -11,7 +11,7 @@ spec:
 	path: cert-manager
   destination:
 	server: https://kubernetes.default.svc
-	namespace: data-lakehouse
+	namespace: cert-manager
   syncPolicy:
 	automated:
 	  prune: true
