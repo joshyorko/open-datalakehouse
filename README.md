@@ -1,6 +1,6 @@
 # Open Datalakehouse Repository Structure
 
-<img src="utils/logo.webp" width="850" height="500" alt="Logo">
+![Logo](utils/logo.webp)
 
 ## The Tutorial: A Step-by-Step Guide to Controlled Chaos
 
