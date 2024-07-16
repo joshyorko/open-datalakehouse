@@ -1,4 +1,4 @@
-# Open Datalakehouse Repository Structure
+# Open Datalakehouse - ArgoCD, Minio, Dremio, Cert-Manager, Let's Encrypt, Apache Superset, Project Nessie, PostgreSQL, Spark, Nginx
 
 
 ## The Tutorial: A Step-by-Step Guide to Controlled Chaos
