@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/icrowley/fake"
+	"github.com/schollz/progressbar/v3"
 	"github.com/xitongsys/parquet-go-source/local"
 	"github.com/xitongsys/parquet-go/parquet"
 	"github.com/xitongsys/parquet-go/writer"
 )
-
 
 type SoftwareCompany struct {
 	Name      string `parquet:"name=name, type=BYTE_ARRAY, convertedtype=UTF8"`
@@ -71,11 +71,14 @@ func main() {
 		fmt.Println("Error creating company writer:", err)
 		return
 	}
-	companyWriter.RowGroupSize = 128 * 1024 * 1024 //128M
+	companyWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
 	companyWriter.CompressionType = parquet.CompressionCodec_SNAPPY
 
 	var companies []SoftwareCompany
 	uniqueNames := make(map[string]bool)
+
+	// Progress bar for companies
+	bar := progressbar.NewOptions(companySize, progressbar.OptionSetDescription("Creating Companies"))
 
 	for i := 0; i < companySize; i++ {
 		var name string
@@ -102,6 +105,7 @@ func main() {
 		}
 		companies = append(companies, company)
 		companyWriter.Write(&company)
+		bar.Add(1)
 	}
 	companyWriter.WriteStop()
 	companyFile.Close()
@@ -109,8 +113,15 @@ func main() {
 	// Creating Employees
 	employeeFile, _ := local.NewLocalFileWriter("employees_go.parquet")
 	employeeWriter, _ := writer.NewParquetWriter(employeeFile, new(Employee), 2)
-	employeeWriter.RowGroupSize = 128 * 1024 * 1024 //128M
+	employeeWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
 	employeeWriter.CompressionType = parquet.CompressionCodec_SNAPPY
+
+	// Progress bar for employees
+	totalEmployees := 0
+	for _, company := range companies {
+		totalEmployees += int(company.Employees)
+	}
+	employeeBar := progressbar.NewOptions(totalEmployees, progressbar.OptionSetDescription("Creating Employees"))
 
 	for _, company := range companies {
 		for i := 0; i < int(company.Employees); i++ {
@@ -126,6 +137,7 @@ func main() {
 				Salary:      int32(rand.Intn(150000)),
 			}
 			employeeWriter.Write(&employee)
+			employeeBar.Add(1)
 		}
 	}
 	employeeWriter.WriteStop()
@@ -134,8 +146,12 @@ func main() {
 	// Creating Departments
 	departmentFile, _ := local.NewLocalFileWriter("departments_go.parquet")
 	departmentWriter, _ := writer.NewParquetWriter(departmentFile, new(Department), 2)
-	departmentWriter.RowGroupSize = 128 * 1024 * 1024 //128M
+	departmentWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
 	departmentWriter.CompressionType = parquet.CompressionCodec_SNAPPY
+
+	// Progress bar for departments
+	totalDepartments := companySize * 5 // Assuming max 5 departments per company for progress bar estimation
+	departmentBar := progressbar.NewOptions(totalDepartments, progressbar.OptionSetDescription("Creating Departments"))
 
 	for _, company := range companies {
 		numDepartments := rand.Intn(5) + 1 // Random number of departments
@@ -152,6 +168,7 @@ func main() {
 				FunctionalArea: fake.Industry(),
 			}
 			departmentWriter.Write(&department)
+			departmentBar.Add(1)
 		}
 	}
 	departmentWriter.WriteStop()
