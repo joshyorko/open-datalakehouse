@@ -1,11 +1,9 @@
-# values.yaml
-
 # PostgreSQL settings
 postgresql:
   postgresqlPassword: superset
   persistence:
     enabled: true
-    
+    storageClass: "gp2-expandable"
     accessModes:
       - ReadWriteOnce
     size: 8Gi
@@ -15,7 +13,7 @@ redis:
   master:
     persistence:
       enabled: true
-      
+      storageClass: "gp2-expandable"
       accessModes:
         - ReadWriteOnce
       size: 8Gi
@@ -23,7 +21,7 @@ redis:
 # Configuration overrides
 configOverrides:
   secret: |
-    SECRET_KEY = 'SUPERSECRETTOKEN'
+    SECRET_KEY = 'supersecrettoken'
 
 # Superset node settings
 supersetNode:
@@ -57,7 +55,58 @@ supersetWorker:
 supersetCeleryBeat:
   enabled: true
 
+init:
+  resources: {}
+  command:
+    - "/bin/sh"
+    - "-c"
+    - ". {{ .Values.configMountPath }}/superset_bootstrap.sh; . {{ .Values.configMountPath }}/superset_init.sh"
+  enabled: true
+  jobAnnotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+  loadExamples: false
+  createAdmin: true
+  adminUser:
+    username: joshyorko
+    firstname: Superset
+    lastname: Admin
+    email: email@example.com
+    password: supersecretpassword
+  initContainers:
+    - name: wait-for-postgres
+      image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+      imagePullPolicy: "{{ .Values.initImage.pullPolicy }}"
+      envFrom:
+        - secretRef:
+            name: "{{ tpl .Values.envFromSecret . }}"
+      command:
+        - /bin/sh
+        - -c
+        - dockerize -wait "tcp://$DB_HOST:$DB_PORT" -timeout 120s
+  initscript: |-
+    #!/bin/sh
+    set -eu
+    echo "Upgrading DB schema..."
+    superset db upgrade
+    echo "Initializing roles..."
+    superset init
+    {{ if .Values.init.createAdmin }}
+    echo "Creating admin user..."
+    superset fab create-admin \
+                    --username {{ .Values.init.adminUser.username }} \
+                    --firstname {{ .Values.init.adminUser.firstname }} \
+                    --lastname {{ .Values.init.adminUser.lastname }} \
+                    --email {{ .Values.init.adminUser.email }} \
+                    --password {{ .Values.init.adminUser.password }} \
+                    || true
+    {{- end }}
 
+    
+    if [ -f "{{ .Values.extraConfigMountPath }}/import_datasources.yaml" ]; then
+      echo "Importing database connections.... "
+      superset import_datasources -p {{ .Values.extraConfigMountPath }}/import_datasources.yaml
+    fi
 
 # Bootstrap script to install additional packages
 bootstrapScript: |
@@ -70,3 +119,4 @@ extraEnv: {}
 
 # Extra secret environment variables
 extraSecretEnv: {}
+
