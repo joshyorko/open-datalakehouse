@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dremio-ingress
+  namespace: datalake
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - "*.maui-images.com"
+    secretName: maui-tls-production
+  rules:
+  - host: dremio.maui-images.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dremio
+            port:
+              number: 9047
