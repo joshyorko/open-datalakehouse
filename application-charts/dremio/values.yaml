@@ -10,39 +10,88 @@ dremio:
   masterCoordinator:
     resources:
       requests:
-        memory: "16Gi"
+        memory: "48Gi"
         cpu: "4"
       limits:
-        memory: "36Gi"
+        memory: "60Gi"
         cpu: "6"
     persistence:
-      
+      storageClass: "gp2-expandable"
       size: 50Gi
+    extraStartParams: >-
+      -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+      -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+    extraEnvVars:
+      - name: DREMIO_TLS_KEYSTORE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: dremio-keystore-password
+            key: password
 
   coordinator:
     resources:
       requests:
-        memory: "16Gi"
+        memory: "24Gi"
         cpu: "4"
       limits:
-        memory: "36Gi"
+        memory: "48Gi"
         cpu: "6"
     persistence:
-      
+      storageClass: "gp2-expandable"
       size: 50Gi
+    extraStartParams: >-
+      -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+      -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+    extraEnvVars:
+      - name: DREMIO_TLS_KEYSTORE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: dremio-keystore-password
+            key: password
+    autoscaling:
+      hpa:
+        enabled: true
+        minReplicas: 1
+        maxReplicas: 3
+        targetCPU: 80
+        targetMemory: 80
 
   executor:
     common:
       resources:
         requests:
-          memory: "32Gi"
-          cpu: "4"
+          memory: "160Gi"
+          cpu: "10"
         limits:
-          memory: "32Gi"
-          cpu: "8"
+          memory: "300Gi"
+          cpu: "18"
       persistence:
-        
-        size: 100Gi
+        storageClass: "gp2-expandable"
+        size: 200Gi
+      extraStartParams: >-
+        -Xmx160g
+        -XX:MaxDirectMemorySize=40g
+        -XX:+UseG1GC
+        -XX:G1HeapRegionSize=32M
+        -XX:+UseGCOverheadLimit
+        -XX:+ExplicitGCInvokesConcurrent
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
+        -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+        -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+      extraEnvVars:
+        - name: DREMIO_TLS_KEYSTORE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dremio-keystore-password
+              key: password
+      autoscaling:
+        hpa:
+          enabled: true
+          minReplicas: 1
+          maxReplicas: 5
+          targetCPU: 80
+          targetMemory: 80
 
   defaultInitContainers:
     wait:
@@ -88,16 +137,22 @@ dremio:
 
   service:
     type: LoadBalancer
-    annotations:
-      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-west-2:833662972458:certificate/d5350613-9506-4d64-af34-21b55ba5cc28"
-      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
-      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+
+  extraVolumes:
+    - name: dremio-tls
+      secret:
+        secretName: dremio-tls-secret
+
+  extraVolumeMounts:
+    - name: dremio-tls
+      mountPath: /opt/dremio/tls
+      readOnly: true
 
 minio:
   enabled: true
   auth:
     rootUser: "minio-admin"
-    rootPassword: "MinioPassword123!"  # Change this to a secure password
+    rootPassword: "super_secret_minio_password"  # Change this to a secure password
   defaultBuckets: "dremio"
   tls:
     enabled: false
@@ -109,13 +164,13 @@ minio:
       api: 9000
   resources:
     requests:
-      memory: "4Gi"
+      memory: "6Gi"
       cpu: "2"
     limits:
-      memory: "8Gi"
+      memory: "12Gi"
       cpu: "4"
   persistence:
-    
+    storageClass: "gp2-expandable"
     size: 50Gi
 
 zookeeper:
@@ -124,10 +179,10 @@ zookeeper:
   resources:
     requests:
       cpu: "1"
-      memory: "2Gi"
+      memory: "3Gi"
     limits:
       cpu: "2"
-      memory: "4Gi"
+      memory: "6Gi"
   persistence:
-    
+    storageClass: "gp2-expandable"
     size: 20Gi
