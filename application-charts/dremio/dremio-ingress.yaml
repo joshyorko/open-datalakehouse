@@ -9,10 +9,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - "*.maui-images.com"
-    secretName: maui-tls-production
+    - "*.hostname.com"
+    secretName:tls-production
   rules:
-  - host: dremio.maui-images.com
+  - host: dremio.hostname.com
     http:
       paths:
       - path: /
