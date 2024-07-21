@@ -7,7 +7,7 @@ spec:
   source:
     repoURL: https://github.com/joshyorko/open-datalakehouse.git
     targetRevision: HEAD
-    path: spark
+    path: application-charts/spark
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
