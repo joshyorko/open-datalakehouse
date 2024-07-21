@@ -27,6 +27,7 @@ primary:
       memory: "8Gi"
       cpu: "4"
   persistence:
+    storageClass: "longhorn"
     enabled: true
     #size: 200Gi   # Increased from 100Gi to 200Gi
 
@@ -41,5 +42,6 @@ replica:
       memory: "8Gi"
       cpu: "4"
   persistence:
+    storageClass: "longhorn"
     enabled: true
    # size: 200Gi   # Increased from 100Gi to 200Gi

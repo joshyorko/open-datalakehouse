@@ -1,5 +1,13 @@
 # Configuration values for the Nessie application Helm chart
+global:
+  imageRegistry: ""
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
 
+  storageClass: "longhorn"
 # Specify the image repository and tag for the Nessie application
 image:
   repository: nessie
@@ -7,6 +15,7 @@ image:
 
 # Specify the number of replicas for the Nessie application deployment
 replicaCount: 1
+
 
 # Specify the service port for the Nessie application
 service:
