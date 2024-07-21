@@ -2,7 +2,7 @@ dremio:
   auth:
     enabled: true
     username: "admin"
-    password: "super_secret_password"
+    password: "DremioSecretPassword123!"
     firstName: "Josh"
     lastName: "Yorko"
     email: "joshua.yorko@gmail.com"
@@ -22,10 +22,10 @@ dremio:
       size: 50Gi
 
   executor:
-   
+      replicaCount: 3
       persistence:
         storageClass: "longhorn"
-        size: 200Gi
+
       extraStartParams: >-
         -Xmx160g
         -XX:MaxDirectMemorySize=40g
@@ -109,7 +109,7 @@ minio:
 
 zookeeper:
   enabled: true
-  replicaCount: 3
+  replicaCount: 1
   resources:
     requests:
       cpu: "1"
