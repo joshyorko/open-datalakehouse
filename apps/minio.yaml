@@ -11,7 +11,7 @@ spec:
     targetRevision: 14.6.25  # Adjust version as needed
     helm:
       valueFiles:
-        - ../../application-charts/minio/minio-values.yaml
+        - application-charts/minio/minio-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse

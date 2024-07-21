@@ -10,8 +10,11 @@ spec:
     chart: superset
     targetRevision: 0.8.3  # Adjust version as needed
     helm:
-      valueFiles:
-        - ../../application-charts/superset/values.yaml
+      parameters:
+        - name: valueFiles
+          value: |
+            # Fetch values.yaml from GitHub
+            - https://github.com/joshyorko/open-datalakehouse/raw/main/path/to/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse

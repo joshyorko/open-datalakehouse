@@ -11,7 +11,7 @@ spec:
     targetRevision: 1.0.0  # Adjust version as needed
     helm:
       valueFiles:
-        - ../../application-charts/nessie/values.yaml
+        - application-charts/nessie/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse

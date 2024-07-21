@@ -11,7 +11,7 @@ spec:
     targetRevision: 0.1.5  # Adjust version as needed
     helm:
       valueFiles:
-        - ../../application-charts/dremio/dremio-values.yaml
+        - application-charts/dremio/dremio-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
