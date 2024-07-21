@@ -8,13 +8,7 @@ dremio:
     email: "email@example.com"
 
   masterCoordinator:
-    resources:
-      requests:
-        memory: "48Gi"
-        cpu: "4"
-      limits:
-        memory: "60Gi"
-        cpu: "6"
+    
     persistence:
       storageClass: "longhorn"
       size: 50Gi
@@ -29,13 +23,7 @@ dremio:
             key: password
 
   coordinator:
-    resources:
-      requests:
-        memory: "24Gi"
-        cpu: "4"
-      limits:
-        memory: "48Gi"
-        cpu: "6"
+   
     persistence:
       storageClass: "longhorn"
       size: 50Gi
@@ -48,23 +36,9 @@ dremio:
           secretKeyRef:
             name: dremio-keystore-password
             key: password
-    autoscaling:
-      hpa:
-        enabled: true
-        minReplicas: 1
-        maxReplicas: 3
-        targetCPU: 80
-        targetMemory: 80
 
   executor:
-    common:
-      resources:
-        requests:
-          memory: "160Gi"
-          cpu: "10"
-        limits:
-          memory: "300Gi"
-          cpu: "18"
+   
       persistence:
         storageClass: "longhorn"
         size: 200Gi
@@ -85,13 +59,7 @@ dremio:
             secretKeyRef:
               name: dremio-keystore-password
               key: password
-      autoscaling:
-        hpa:
-          enabled: true
-          minReplicas: 1
-          maxReplicas: 5
-          targetCPU: 80
-          targetMemory: 80
+
 
   defaultInitContainers:
     wait:
