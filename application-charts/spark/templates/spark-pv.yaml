@@ -6,7 +6,6 @@ metadata:
 spec:
   capacity:
     storage: 100Gi
-    storageClassName: longhorn
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
