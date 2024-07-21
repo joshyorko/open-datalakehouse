@@ -53,12 +53,12 @@ dremio:
         -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
         -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
         -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
-      extraEnvVars:
-        - name: DREMIO_TLS_KEYSTORE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: dremio-keystore-password
-              key: password
+      #extraEnvVars:
+      #  - name: DREMIO_TLS_KEYSTORE_PASSWORD
+      #    valueFrom:
+      #      secretKeyRef:
+      #        name: dremio-keystore-password
+      #        key: password
 
 
   defaultInitContainers:
@@ -106,15 +106,15 @@ dremio:
   service:
     type: LoadBalancer
 
-  extraVolumes:
-    - name: dremio-tls
-      secret:
-        secretName: dremio-tls-secret
-
-  extraVolumeMounts:
-    - name: dremio-tls
-      mountPath: /opt/dremio/tls
-      readOnly: true
+  #extraVolumes:
+  #  - name: dremio-tls
+  #    secret:
+  #      secretName: dremio-tls-secret
+#
+  #extraVolumeMounts:
+  #  - name: dremio-tls
+  #    mountPath: /opt/dremio/tls
+  #    readOnly: true
 
 minio:
   enabled: true
