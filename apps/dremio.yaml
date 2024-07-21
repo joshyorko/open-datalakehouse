@@ -13,8 +13,7 @@ spec:
       parameters:
         - name: valueFiles
           value: |
-            # Fetch values.yaml from GitHub
-            - https://github.com/joshyorko/open-datalakehouse/raw/main/application-charts/dremio/dremio-values.yaml
+            - https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/dremio/dremio-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
