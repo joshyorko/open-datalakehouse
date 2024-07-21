@@ -1,17 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dremio
+  name: minio
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://charts.bitnami.com/bitnami
-    chart: dremio
-    targetRevision: 0.1.5  # Adjust version as needed
+    chart: minio
+    targetRevision: 14.6.25  # Adjust version as needed
     helm:
       valueFiles:
-        - ../../application-charts/dremio/dremio-values.yaml
+        - ../../application-charts/minio/minio-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
