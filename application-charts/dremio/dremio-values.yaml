@@ -7,9 +7,7 @@ dremio:
     lastName: Yorko
     email: "joshua.yorko@gmail.com"
 
-
   masterCoordinator:
-    
     persistence:
       storageClass: "longhorn"
       size: 50Gi
@@ -24,7 +22,6 @@ dremio:
             key: password
 
   coordinator:
-   
     persistence:
       storageClass: "longhorn"
       size: 50Gi
@@ -39,28 +36,26 @@ dremio:
             key: password
 
   executor:
-   
-      persistence:
-        storageClass: "longhorn"
-        size: 200Gi
-      extraStartParams: >-
-        -Xmx160g
-        -XX:MaxDirectMemorySize=40g
-        -XX:+UseG1GC
-        -XX:G1HeapRegionSize=32M
-        -XX:+UseGCOverheadLimit
-        -XX:+ExplicitGCInvokesConcurrent
-        -XX:+HeapDumpOnOutOfMemoryError
-        -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
-        -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
-        -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
-      #extraEnvVars:
-      #  - name: DREMIO_TLS_KEYSTORE_PASSWORD
-      #    valueFrom:
-      #      secretKeyRef:
-      #        name: dremio-keystore-password
-      #        key: password
-
+    persistence:
+      storageClass: "longhorn"
+      size: 200Gi
+    extraStartParams: >-
+      -Xmx160g
+      -XX:MaxDirectMemorySize=40g
+      -XX:+UseG1GC
+      -XX:G1HeapRegionSize=32M
+      -XX:+UseGCOverheadLimit
+      -XX:+ExplicitGCInvokesConcurrent
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
+      -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+      -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+    extraEnvVars:
+      - name: DREMIO_TLS_KEYSTORE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: dremio-keystore-password
+            key: password
 
   defaultInitContainers:
     wait:
