@@ -116,7 +116,7 @@ minio:
   enabled: true
   auth:
     rootUser: "minio-admin"
-    rootPassword: "super_secret_minio_password"  # Change this to a secure password
+    rootPassword: "jamisonVolvoMercedes724Minio"  # Change this to a secure password
   defaultBuckets: "dremio"
   tls:
     enabled: false

@@ -8,13 +8,15 @@ NAMESPACE="data-lakehouse"
 
 # Generate a Keystore and a Self-Signed Certificate
 keytool -genkeypair -alias dremio -keyalg RSA -keysize 2048 -storetype JKS -keystore $KEYSTORE_NAME -validity 365 -storepass $KEYSTORE_PASSWORD <<EOF
-John Doe
+Josh Yorko
 IT
 ExampleCorp
 Worcester
 MA
 US
 yes
+$KEYSTORE_PASSWORD
+$KEYSTORE_PASSWORD
 EOF
 
 # Export the Certificate (Optional)
