@@ -38,7 +38,7 @@ dremio:
   executor:
     persistence:
       storageClass: "longhorn"
-      size: 200Gi
+      size: 80Gi
     extraStartParams: >-
       -XX:+UseG1GC
       -XX:+UseGCOverheadLimit
