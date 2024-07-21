@@ -22,7 +22,10 @@ dremio:
       size: 50Gi
 
   executor:
-      replicaCount: 1
+      common:
+        ## @param executor.common.replicaCount Number of Dremio Executor replicas to deploy
+        ##
+        replicaCount: 3
       persistence:
         storageClass: "longhorn"
 
