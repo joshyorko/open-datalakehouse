@@ -8,18 +8,7 @@ global:
   imagePullSecrets: []
 
   storageClass: "longhorn"
-# Specify the image repository and tag for the Nessie application
-image:
-  repository: nessie
-  tag: latest
 
-# Specify the number of replicas for the Nessie application deployment
-replicaCount: 1
-
-
-# Specify the service port for the Nessie application
-service:
-  port: 8080
 
 # Specify any additional configuration values for the Nessie application
 # For example:
