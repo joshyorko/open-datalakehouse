@@ -139,7 +139,7 @@ minio:
 
 zookeeper:
   enabled: true
-  replicaCount: 3
+  replicaCount: 1
   resources:
     requests:
       cpu: "1"
