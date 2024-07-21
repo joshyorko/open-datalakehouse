@@ -11,9 +11,9 @@ create_ghcr_secret() {
 
   kubectl create secret docker-registry ghcr-login \
     --docker-server=ghcr.io \
-    --docker-username=jyorko \
+    --docker-username="joshyorko" \
     --docker-password="$token" \
-    --docker-email=email@example.com \
+    --docker-email=joshua.yorko@gmail.com \
     --dry-run=client -o yaml > "$output_file"
 
   echo -e "${GREEN}🔐 GitHub Container Registry secret YAML file created: $output_file${NC}"
