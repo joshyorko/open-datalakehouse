@@ -14,7 +14,7 @@ spec:
         - name: valueFiles
           value: |
             # Fetch values.yaml from GitHub
-            - https://github.com/joshyorko/open-datalakehouse/raw/main/path/to/values.yaml
+            - https://github.com/joshyorko/open-datalakehouse/raw/main/application-charts/superset/superset-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse

@@ -10,8 +10,11 @@ spec:
     chart: postgresql
     targetRevision: 12.5.5  # Adjust version as needed
     helm:
-      valueFiles:
-        - application-charts/postgres-db/values.yaml
+      parameters:
+        - name: valueFiles
+          value: |
+            # Fetch values.yaml from GitHub
+            - https://github.com/joshyorko/open-datalakehouse/raw/main/application-charts/postgres-db/postgres-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse

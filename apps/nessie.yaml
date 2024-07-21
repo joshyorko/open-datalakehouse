@@ -10,8 +10,11 @@ spec:
     chart: nessie
     targetRevision: 1.0.0  # Adjust version as needed
     helm:
-      valueFiles:
-        - application-charts/nessie/values.yaml
+      parameters:
+        - name: valueFiles
+          value: |
+            # Fetch values.yaml from GitHub
+            - https://github.com/joshyorko/open-datalakehouse/raw/main/application-charts/nessie/nessie-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
