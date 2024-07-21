@@ -38,9 +38,12 @@ dremio:
   executor:
     persistence:
       storageClass: "longhorn"
-      size: 80Gi
+      size: 200Gi
     extraStartParams: >-
+      -Xmx160g
+      -XX:MaxDirectMemorySize=40g
       -XX:+UseG1GC
+      -XX:G1HeapRegionSize=32M
       -XX:+UseGCOverheadLimit
       -XX:+ExplicitGCInvokesConcurrent
       -XX:+HeapDumpOnOutOfMemoryError
