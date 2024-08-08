@@ -99,7 +99,7 @@ func main() {
 		company := SoftwareCompany{
 			Name:      name,
 			Industry:  fake.Industry(),
-			Employees: int32(rand.Intn(20000)),
+			Employees: int32(rand.Intn(200000)),
 			Revenue:   int64(rand.Intn(1000000000)),
 			Location:  fake.City(),
 		}

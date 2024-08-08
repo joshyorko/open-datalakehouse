@@ -2,7 +2,7 @@ dremio:
   auth:
     enabled: true
     username: kdlocpanda
-    password: "jamisonVolvoMercedes724"
+    password: "newPassword123"
     firstName: Josh
     lastName: Yorko
     email: "joshua.yorko@gmail.com"
@@ -116,7 +116,7 @@ minio:
   enabled: true
   auth:
     rootUser: "minio-admin"
-    rootPassword: "jamisonVolvoMercedes724Minio"  # Change this to a secure password
+    rootPassword: "newPassword123"  # Change this to a secure password
   defaultBuckets: "dremio"
   tls:
     enabled: false
@@ -126,27 +126,15 @@ minio:
     loadBalancerIP: ""
     ports:
       api: 9000
-  resources:
-    requests:
-      memory: "6Gi"
-      cpu: "2"
-    limits:
-      memory: "12Gi"
-      cpu: "4"
+ 
   persistence:
     storageClass: "longhorn"
-    size: 50Gi
+    size: 200Gi
 
 zookeeper:
   enabled: true
   replicaCount: 1
-  resources:
-    requests:
-      cpu: "1"
-      memory: "3Gi"
-    limits:
-      cpu: "2"
-      memory: "6Gi"
+ 
   persistence:
     storageClass: "longhorn"
     size: 20Gi
