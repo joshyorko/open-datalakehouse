@@ -10,7 +10,7 @@ dremio:
   masterCoordinator:
     persistence:
       storageClass: "longhorn"
-      size: 10Gi
+      size: 50Gi
     extraStartParams: >-
       -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
       -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -24,7 +24,7 @@ dremio:
   coordinator:
     persistence:
       storageClass: "longhorn"
-      size: 10Gi
+      size: 50Gi
     extraStartParams: >-
       -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
       -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -38,7 +38,7 @@ dremio:
   executor:
     persistence:
       storageClass: "longhorn"
-      size: 20Gi
+      size: 100Gi
     extraStartParams: >-
       -XX:+UseG1GC
       -XX:+UseGCOverheadLimit
@@ -123,7 +123,13 @@ minio:
     loadBalancerIP: ""
     ports:
       api: 9000
-
+  resources:
+    requests:
+      memory: "6Gi"
+      cpu: "2"
+    limits:
+      memory: "12Gi"
+      cpu: "4"
   persistence:
     storageClass: "longhorn"
     size: 200Gi
@@ -131,7 +137,13 @@ minio:
 zookeeper:
   enabled: true
   replicaCount: 1
- 
+  resources:
+    requests:
+      cpu: "1"
+      memory: "3Gi"
+    limits:
+      cpu: "2"
+      memory: "6Gi"
   persistence:
     storageClass: "longhorn"
-    size: 10Gi
+    size: 20Gi
