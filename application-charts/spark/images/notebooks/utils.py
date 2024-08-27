@@ -19,14 +19,13 @@ def get_db_tables(table_name, date, spark):
     # Initialize Spark session with the configured SparkConf
 
     query = f'SELECT * FROM nessie.{table_name} WHERE DATE = \'{date}\';'
-    df = spark.sql(query)
+    df = spark.sql(query).toPandas()
     
     # Convert column headers to uppercase
-    #df.columns = [col.upper() for col in df.columns]
+    df.columns = [col.upper() for col in df.columns]
 
 
     return df
-
 
 def remove_s3_directory(bucket_name, s3_prefix):
     aws_access_key, aws_secret_key = get_credentials('minio')
@@ -35,7 +34,7 @@ def remove_s3_directory(bucket_name, s3_prefix):
         's3',
         aws_access_key_id=aws_access_key,
         aws_secret_access_key=aws_secret_key,
-        endpoint_url="http://a8c78c2e92dd442ff93f5d247b6a2cc7-1221119726.us-west-2.elb.amazonaws.com:9000"
+        endpoint_url=""
     )
     s3 = boto3.client("s3")
     paginator = s3.get_paginator('list_objects_v2')
@@ -52,7 +51,7 @@ def upload_to_s3(output_folder, s3_bucket, s3_prefix):
         's3',
         aws_access_key_id=aws_access_key,
         aws_secret_access_key=aws_secret_key,
-        endpoint_url="http://a8c78c2e92dd442ff93f5d247b6a2cc7-1221119726.us-west-2.elb.amazonaws.com:9000"  # Ensure this is the correct endpoint
+        endpoint_url=""  # Ensure this is the correct endpoint
     )
     
     allocation_s3_path = 'allocation/allocation.csv'
@@ -89,6 +88,7 @@ def upload_csv_to_nessie(tables,branch):
         spark.stop()
 
 
+
 def get_credentials(provider):
     if provider == 'aws':
         return os.getenv("AWS_ACCESS_KEY_ID"), os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -108,9 +108,9 @@ def configure_environment(provider):
 def configure_spark(provider, branch):
     """Configure and initialize Spark session."""
     configure_environment(provider)
-    NESSIE_URI = "http://192.168.1.83:19120/api/v1"
-    WAREHOUSE = "s3a://lakehouse/"
-    AWS_S3_ENDPOINT = "http://192.168.1.82:9000"
+    NESSIE_URI = "http://nessie:19120/api/v1"
+    WAREHOUSE = "s3a://warehouse/"
+    AWS_S3_ENDPOINT = "http://minio:9000"
     AWS_REGION = "us-east-1"
     iceberg_warehouse_path = "iceberg_warehouse"  # Change this to your desired path
 
@@ -150,9 +150,5 @@ def configure_spark(provider, branch):
         .set("spark.local.dir", "/tmp/spark-temp")
     )
 
+
     return SparkSession.builder.config(conf=conf).getOrCreate()
-
-
-
-
-

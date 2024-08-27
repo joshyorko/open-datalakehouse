@@ -1,0 +1,13 @@
+pandas
+boto3
+tqdm
+openpyxl
+pyarrow
+pynessie
+pyspark
+XlsxWriter
+sqlalchemy
+psycopg2-binary
+python-dotenv
+dremio-simple-query
+duckdb

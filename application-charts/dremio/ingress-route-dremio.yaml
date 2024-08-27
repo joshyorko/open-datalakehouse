@@ -16,4 +16,4 @@ spec:
         - name: dremio
           port: 9047
   tls:
-    secretName: yorko-io-tls  # Use the copied secret in the cattle-system namespace
+    secretName: local-yorko-io-staging-tls  # Use the copied secret in the cattle-system namespace

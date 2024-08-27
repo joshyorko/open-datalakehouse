@@ -1,208 +1,256 @@
 package main
 
 import (
-    "bytes"
-    "encoding/csv"
-    "fmt"
-    "log"
-    "math/rand"
-    "strings"
-    "time"
+	"bytes"
+	"context"
+	"fmt"
+	"log"
+	"math/rand"
+	"strings"
+	"sync"
+	"time"
 
-    "github.com/minio/minio-go/v7"
-    "github.com/minio/minio-go/v7/pkg/credentials"
-    "github.com/icrowley/fake"
+	"github.com/icrowley/fake"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/schollz/progressbar/v3"
+	"github.com/xitongsys/parquet-go-source/writerfile"
+	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/writer"
 )
 
-// Structs
 type SoftwareCompany struct {
-    Name      string
-    Industry  string
-    Employees int
-    Revenue   int
-    Location  string
+	Name      string `parquet:"name=name, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Industry  string `parquet:"name=industry, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Employees int32  `parquet:"name=employees, type=INT32"`
+	Revenue   int64  `parquet:"name=revenue, type=INT64"`
+	Location  string `parquet:"name=location, type=BYTE_ARRAY, convertedtype=UTF8"`
 }
 
 type Employee struct {
-    CompanyName string
-    StartDate   string
-    FirstName   string
-    LastName    string
-    Email       string
-    Position    string
-    Salary      int
+	CompanyName string `parquet:"name=companyName, type=BYTE_ARRAY, convertedtype=UTF8"`
+	FirstName   string `parquet:"name=firstName, type=BYTE_ARRAY, convertedtype=UTF8"`
+	LastName    string `parquet:"name=lastName, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Email       string `parquet:"name=email, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Position    string `parquet:"name=position, type=BYTE_ARRAY, convertedtype=UTF8"`
+	Salary      int32  `parquet:"name=salary, type=INT32"`
 }
 
 type Department struct {
-    CompanyName    string
-    DepartmentName string
-    ManagerID      int
-    Budget         int
-    Location       string
-    StartDate      string
-    EndDate        string
-    DepartmentSize int
-    FunctionalArea string
-}
-
-// MinIO S3 Upload Function
-func uploadToMinIO(client *minio.Client, bucketName string, key string, data []byte) error {
-    _, err := client.PutObject(
-        bucketName,
-        key,
-        bytes.NewReader(data),
-        int64(len(data)),
-        minio.PutObjectOptions{ContentType: "application/csv"},
-    )
-    return err
+	CompanyName    string `parquet:"name=companyName, type=BYTE_ARRAY, convertedtype=UTF8"`
+	DepartmentName string `parquet:"name=departmentName, type=BYTE_ARRAY, convertedtype=UTF8"`
+	ManagerID      int32  `parquet:"name=managerID, type=INT32"`
+	Budget         int32  `parquet:"name=budget, type=INT32"`
+	Location       string `parquet:"name=location, type=BYTE_ARRAY, convertedtype=UTF8"`
+	StartDate      string `parquet:"name=startDate, type=BYTE_ARRAY, convertedtype=UTF8"`
+	EndDate        string `parquet:"name=endDate, type=BYTE_ARRAY, convertedtype=UTF8"`
+	DepartmentSize int32  `parquet:"name=departmentSize, type=INT32"`
+	FunctionalArea string `parquet:"name=functionalArea, type=BYTE_ARRAY, convertedtype=UTF8"`
 }
 
 func RandomDate() string {
-    min := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
-    max := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
-    delta := max - min
+	min := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
+	max := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
+	delta := max - min
 
-    sec := rand.Int63n(delta) + min
-    return time.Unix(sec, 0).Format("2006-01-02")
+	sec := rand.Int63n(delta) + min
+	return time.Unix(sec, 0).Format("2006-01-02")
 }
 
-// Function to generate a unique filename with a timestamp
-func uniqueFilename(prefix string) string {
-    timestamp := time.Now().Format("20060102-150405") // YYYYMMDD-HHMMSS format
-    return fmt.Sprintf("%s-%s.csv", prefix, timestamp)
+// MinIO S3 Upload Function with retry logic
+func uploadToMinIO(ctx context.Context, client *minio.Client, bucketName string, key string, data []byte, wg *sync.WaitGroup, semaphore chan struct{}) {
+	defer wg.Done()
+	defer func() { <-semaphore }()
+	const maxRetries = 3
+	for i := 0; i < maxRetries; i++ {
+		_, err := client.PutObject(
+			ctx,
+			bucketName,
+			key,
+			bytes.NewReader(data),
+			int64(len(data)),
+			minio.PutObjectOptions{ContentType: "application/parquet"},
+		)
+		if err == nil {
+			return
+		}
+		log.Printf("Failed to upload data to MinIO: %v (attempt %d/%d)", err, i+1, maxRetries)
+		time.Sleep(time.Duration(i+1) * time.Second) // Exponential backoff
+	}
+	log.Printf("Failed to upload data to MinIO after %d attempts", maxRetries)
 }
 
 func main() {
-    startTime := time.Now()
-    rand.Seed(time.Now().UnixNano())
+	startTime := time.Now()
+	rand.Seed(time.Now().UnixNano())
 
-    // MinIO Client
-    endpoint := "your-minio-endpoint:9000"
-    accessKeyID := "your-access-key"
-    secretAccessKey := "your-secret-key"
-    useSSL := false
+	// MinIO Client Setup
+	endpoint := "192.168.1.84:9000"
+	accessKey := "iyh4xQXQSLxHIxTAb2yE"
+	secretAccessKey := "PLbukM7ZQs8FJHixYMEW38E9CLN5fXeXpqsM7Kef"
+	useSSL := false
 
-    minioClient, err := minio.New(endpoint, &minio.Options{
-        Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
-        Secure: useSSL,
-    })
-    if err != nil {
-        log.Fatalf("Failed to create MinIO client: %v", err)
-    }
+	minioClient, err := minio.New(endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(accessKey, secretAccessKey, ""),
+		Secure: useSSL,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create MinIO client: %v", err)
+	}
 
-    // Bucket and Database Names
-    bucketName := "portfolio-company-datalake-jy" // Your S3 bucket name
-    databaseName := "bronze-data"                // Database name for the file path
+	// Create a context
+	ctx := context.Background()
 
-    // Use the uniqueFilename function to generate filenames
-    companyFilename := uniqueFilename("companies-data")
-    employeeFilename := uniqueFilename("employees-data")
-    departmentFilename := uniqueFilename("departments-data")
+	// Bucket and Database Names
+	bucketName := "upload" // Your S3 bucket name
+	databaseName := "bronze-data"                // Database name for the file path
 
-    // Generating Companies
-    var companySize int
-    fmt.Println("Enter Amount of Companies to Create: ")
-    fmt.Scan(&companySize)
+	var companySize int
+	fmt.Println("Enter Amount of Companies to Create: ")
+	fmt.Scan(&companySize)
 
-    var companies []SoftwareCompany
-    uniqueNames := make(map[string]bool)
+	var companies []SoftwareCompany
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, 10) // Limit to 10 concurrent uploads
 
-    companyData := new(bytes.Buffer)
-    companyWriter := csv.NewWriter(companyData)
-    companyWriter.Write([]string{"Name", "Industry", "Employees", "Revenue", "Location"})
+	// Creating Companies
+	func() {
+		companyData := new(bytes.Buffer)
+		companyFile := writerfile.NewWriterFile(companyData)
+		companyWriter, err := writer.NewParquetWriter(companyFile, new(SoftwareCompany), 2)
+		if err != nil {
+			fmt.Println("Error creating company writer:", err)
+			return
+		}
+		defer companyFile.Close()
 
-    for i := 0; i < companySize; i++ {
-        var name string
-        for {
-            name = fake.Company()
-            if _, exists := uniqueNames[name]; !exists {
-                break
-            }
-        }
-        uniqueNames[name] = true
+		companyWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
+		companyWriter.CompressionType = parquet.CompressionCodec_SNAPPY
 
-        company := SoftwareCompany{
-            Name:      name,
-            Industry:  fake.Industry(),
-            Employees: rand.Intn(20000),
-            Revenue:   rand.Intn(1000000000),
-            Location:  fake.City(),
-        }
-        companies = append(companies, company)
-        companyWriter.Write([]string{company.Name, company.Industry, fmt.Sprint(company.Employees), fmt.Sprint(company.Revenue), company.Location})
-    }
-    companyWriter.Flush()
+		uniqueNames := make(map[string]bool)
 
-    // Upload Companies to MinIO
-    if err := uploadToMinIO(minioClient, bucketName, fmt.Sprintf("%s/companies/%s", databaseName, companyFilename), companyData.Bytes()); err != nil {
-        log.Fatalf("Failed to upload company data to MinIO: %v", err)
-    }
+		// Progress bar for companies
+		bar := progressbar.NewOptions(companySize, progressbar.OptionSetDescription("Creating Companies"))
 
-    companyTime := time.Since(startTime)
-    fmt.Printf("Time taken for creating companies: %s\n", companyTime)
+		for i := 0; i < companySize; i++ {
+			var name string
+			attempts := 0
+			for {
+				attempts++
+				name = fake.Company()
+				if _, exists := uniqueNames[name]; !exists {
+					break
+				}
+				if attempts >= 100 {
+					name += fmt.Sprintf("-%d", rand.Intn(9999))
+					break
+				}
+			}
+			uniqueNames[name] = true
 
-    // Generating Employees
-    employeeData := new(bytes.Buffer)
-    employeeWriter := csv.NewWriter(employeeData)
-    employeeWriter.Write([]string{"Company_Name", "First_Name", "Last_Name", "Email", "Position", "Salary"})
+			company := SoftwareCompany{
+				Name:      name,
+				Industry:  fake.Industry(),
+				Employees: int32(rand.Intn(250000)), // Reduced for demo purposes
+				Revenue:   int64(rand.Intn(1000000000)),
+				Location:  fake.City(),
+			}
+			companies = append(companies, company)
+			companyWriter.Write(&company)
+			bar.Add(1)
+		}
 
-    for _, company := range companies {
-        domain := strings.Replace(strings.ToLower(company.Name), " ", "", -1)
-        for i := 0; i < company.Employees; i++ {
-            firstName := fake.FirstName()
-            lastName := fake.LastName()
-            email := fmt.Sprintf("%s.%s@%s.com", strings.ToLower(firstName), strings.ToLower(lastName), domain)
+		companyWriter.WriteStop()
 
-            employee := Employee{
-                CompanyName: company.Name,
-                StartDate:   RandomDate(),
-                FirstName:   firstName,
-                LastName:    lastName,
-                Email:       email,
-                Position:    fake.JobTitle(),
-                Salary:      rand.Intn(150000),
-            }
+		// Upload Companies to MinIO
+		companyFilename := fmt.Sprintf("%s/companies/companies-go-%s.parquet", databaseName, time.Now().Format("20060102-150405"))
+		wg.Add(1)
+		semaphore <- struct{}{}
+		go uploadToMinIO(ctx, minioClient, bucketName, companyFilename, companyData.Bytes(), &wg, semaphore)
+	}()
 
-            employeeWriter.Write([]string{employee.CompanyName, employee.FirstName, employee.LastName, employee.Email, employee.Position, fmt.Sprint(employee.Salary)})
-        }
-    }
-    employeeWriter.Flush()
+	// Ensure all companies are created before proceeding
+	wg.Wait()
 
-    // Upload Employees to MinIO
-    if err := uploadToMinIO(minioClient, bucketName, fmt.Sprintf("%s/employees/%s", databaseName, employeeFilename), employeeData.Bytes()); err != nil {
-        log.Fatalf("Failed to upload employee data to MinIO: %v", err)
-    }
+	// Create and upload employees and departments concurrently
+	employeeBar := progressbar.NewOptions(1, progressbar.OptionSetDescription("Creating Employees"))
 
-    // Generating Departments
-    departmentData := new(bytes.Buffer)
-    departmentWriter := csv.NewWriter(departmentData)
-    departmentWriter.Write([]string{"Company_Name", "Department_Name", "Manager_ID", "Budget", "Location", "Start_Date", "End_Date", "Department_Size", "Functional_Area"})
+	for _, company := range companies {
+		company := company // Capture range variable
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			employeeData := new(bytes.Buffer)
+			employeeFile := writerfile.NewWriterFile(employeeData)
+			employeeWriter, _ := writer.NewParquetWriter(employeeFile, new(Employee), 2)
+			employeeWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
+			employeeWriter.CompressionType = parquet.CompressionCodec_SNAPPY
 
-    for _, company := range companies {
-        for i := 0; i < rand.Intn(5)+1; i++ { // Random number of departments per company
-            department := Department{
-                CompanyName:    company.Name,
-                DepartmentName: "Department of " + fake.Industry(),
-                ManagerID:      rand.Intn(999999),
-                Budget:         rand.Intn(500000),
-                Location:       fake.City(),
-                StartDate:      RandomDate(),
-                EndDate:        RandomDate(),
-                DepartmentSize: rand.Intn(100),
-                FunctionalArea: fake.Industry(),
-            }
-            departmentWriter.Write([]string{department.CompanyName, department.DepartmentName, fmt.Sprint(department.ManagerID), fmt.Sprint(department.Budget), department.Location, department.StartDate, department.EndDate, fmt.Sprint(department.DepartmentSize), department.FunctionalArea})
-        }
-    }
-    departmentWriter.Flush()
+			for i := 0; i < int(company.Employees); i++ {
+				firstName := fake.FirstName()
+				lastName := fake.LastName()
+				email := fmt.Sprintf("%s.%s@%s.com", strings.ToLower(firstName), strings.ToLower(lastName), strings.ToLower(company.Name))
+				employee := Employee{
+					CompanyName: company.Name,
+					FirstName:   firstName,
+					LastName:    lastName,
+					Email:       email,
+					Position:    fake.JobTitle(),
+					Salary:      int32(rand.Intn(150000)),
+				}
+				employeeWriter.Write(&employee)
+				employeeBar.Add(1)
+			}
+			employeeWriter.WriteStop()
+			employeeFile.Close()
 
-    // Upload Departments to MinIO
-    if err := uploadToMinIO(minioClient, bucketName, fmt.Sprintf("%s/departments/%s", databaseName, departmentFilename), departmentData.Bytes()); err != nil {
-        log.Fatalf("Failed to upload department data to MinIO: %v", err)
-    }
+			// Upload Employees to MinIO
+			employeeFilename := fmt.Sprintf("%s/employees/employees-go-%s-%s.parquet", databaseName, company.Name, time.Now().Format("20060102-150405"))
+			wg.Add(1)
+			semaphore <- struct{}{}
+			go uploadToMinIO(ctx, minioClient, bucketName, employeeFilename, employeeData.Bytes(), &wg, semaphore)
+		}()
 
-    fmt.Println("Data generation and upload complete.")
-    totalTime := time.Since(startTime)
-    fmt.Printf("Time taken for creating employees & departments: %s\n", totalTime-companyTime)
-    fmt.Printf("Total time taken: %s\n", totalTime)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			departmentData := new(bytes.Buffer)
+			departmentFile := writerfile.NewWriterFile(departmentData)
+			departmentWriter, _ := writer.NewParquetWriter(departmentFile, new(Department), 2)
+			departmentWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
+			departmentWriter.CompressionType = parquet.CompressionCodec_SNAPPY
+
+			numDepartments := rand.Intn(5) + 1 // Random number of departments
+			departmentBar := progressbar.NewOptions(numDepartments, progressbar.OptionSetDescription(fmt.Sprintf("Creating Departments for %s", company.Name)))
+
+			for i := 0; i < numDepartments; i++ {
+				department := Department{
+					CompanyName:    company.Name,
+					DepartmentName: "Department of " + fake.Industry(),
+					ManagerID:      int32(rand.Intn(999999)),
+					Budget:         int32(rand.Intn(500000)),
+					Location:       fake.City(),
+					StartDate:      RandomDate(),
+					EndDate:        RandomDate(),
+					DepartmentSize: int32(rand.Intn(100)),
+					FunctionalArea: fake.Industry(),
+				}
+				departmentWriter.Write(&department)
+				departmentBar.Add(1)
+			}
+			departmentWriter.WriteStop()
+			departmentFile.Close()
+
+			// Upload Departments to MinIO
+			departmentFilename := fmt.Sprintf("%s/departments/departments-go-%s-%s.parquet", databaseName, company.Name, time.Now().Format("20060102-150405"))
+			wg.Add(1)
+			semaphore <- struct{}{}
+			go uploadToMinIO(ctx, minioClient, bucketName, departmentFilename, departmentData.Bytes(), &wg, semaphore)
+		}()
+	}
+
+	wg.Wait() // Wait for all uploads to finish
+
+	totalTime := time.Since(startTime)
+	fmt.Printf("Total time taken: %s\n", totalTime)
 }
