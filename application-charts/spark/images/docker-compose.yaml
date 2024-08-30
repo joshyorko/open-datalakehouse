@@ -1,28 +1,12 @@
-version: '3.8'
-
-x-shared-env: &shared-env
-  AWS_REGION: us-east-1
-  AWS_ACCESS_KEY_ID: admin # MinIO username
-  AWS_SECRET_ACCESS_KEY: password # MinIO password
-
-x-network: &network
-  networks:
-    - dremio-spark
-
-x-storage: &storage
-  volumes:
-    - dremio-data:/opt/dremio/data
-    - minio-data:/data
-
 services:
   # Nessie Catalog Server Using In-Memory Store
   nessie:
     image: projectnessie/nessie:latest
     container_name: nessie
-    <<: *network
+    networks:
+      dremio-spark:
     ports:
-      - "19120:19120"
-
+      - 19120:19120
   # Minio Storage Server
   minio:
     image: minio/minio:latest
@@ -33,26 +17,26 @@ services:
       - MINIO_DOMAIN=storage
       - MINIO_REGION_NAME=us-east-1
       - MINIO_REGION=us-east-1
-    <<: [*network, *storage]
+    networks:
+      dremio-spark:
     ports:
-      - "9001:9001"
-      - "9000:9000"
+      - 9001:9001
+      - 9000:9000
     command: ["server", "/data", "--console-address", ":9001"]
-
   # Dremio
   dremio:
     platform: linux/x86_64
     image: dremio/dremio-oss:latest
+    ports:
+      - 9047:9047
+      - 31010:31010
+      - 32010:32010
+      - 45678:45678
     container_name: dremio
     environment:
       - DREMIO_JAVA_SERVER_EXTRA_OPTS=-Dpaths.dist=file:///opt/dremio/data/dist
-    <<: [*network, *storage]
-    ports:
-      - "9047:9047"
-      - "31010:31010"
-      - "32010:32010"
-      - "45678:45678"
-
+    networks:
+      dremio-spark:
 
 
   # Spark Notebook
@@ -62,7 +46,8 @@ services:
     container_name: notebook
     volumes:
       - notebook-pv:/home/jovyan/work
-    <<: *network
+    networks:
+      dremio-spark:
     ports: 
       - "8888:8888"  # Notebook
 
