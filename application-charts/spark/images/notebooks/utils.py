@@ -45,30 +45,7 @@ def remove_s3_directory(bucket_name, s3_prefix):
             keys = [{'Key': obj['Key']} for obj in page['Contents']]
             s3.delete_objects(Bucket=bucket_name, Delete={'Objects': keys})
 
-def upload_to_s3(output_folder, s3_bucket, s3_prefix):
-    aws_access_key, aws_secret_key = get_credentials('minio')
-    s3 = boto3.client(
-        's3',
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
-        endpoint_url=""  # Ensure this is the correct endpoint
-    )
-    
-    allocation_s3_path = 'allocation/allocation.csv'
 
-    for root, dirs, files in os.walk(output_folder):
-        for file in files:
-            local_path = os.path.join(root, file)
-
-            # Determine S3 path based on file
-            if file == 'allocation.csv':
-                s3_path = allocation_s3_path
-            else:
-                relative_path = os.path.relpath(local_path, output_folder)
-                s3_path = os.path.join(s3_prefix, relative_path)
-
-            print(f"Uploading {local_path} to s3://{s3_bucket}/{s3_path}")
-            s3.upload_file(local_path, s3_bucket, s3_path)
 
 def upload_csv_to_nessie(tables,branch):
     """Upload CSV files to the Nessie database."""
