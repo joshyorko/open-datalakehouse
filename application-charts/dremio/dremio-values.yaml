@@ -22,9 +22,9 @@ dremio:
             key: password
 
   coordinator:
-    persistence:
-      storageClass: "longhorn"
-      size: 50Gi
+    #persistence:
+    #  storageClass: "longhorn"
+    #  size: 50Gi
     extraStartParams: >-
       -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
       -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -36,9 +36,9 @@ dremio:
             key: password
 
   executor:
-    persistence:
-      storageClass: "longhorn"
-      size: 100Gi
+    #persistence:
+    #  storageClass: "longhorn"
+    #  size: 100Gi
     extraStartParams: >-
       -XX:+UseG1GC
       -XX:+UseGCOverheadLimit
@@ -130,9 +130,9 @@ minio:
     limits:
       memory: "12Gi"
       cpu: "4"
-  persistence:
-    storageClass: "longhorn"
-    size: 200Gi
+  #persistence:
+  #  storageClass: "longhorn"
+  #  size: 200Gi
 
 zookeeper:
   enabled: true
@@ -144,6 +144,6 @@ zookeeper:
     limits:
       cpu: "2"
       memory: "6Gi"
-  persistence:
-    storageClass: "longhorn"
-    size: 20Gi
+  #persistence:
+  #  storageClass: "longhorn"
+  #  size: 20Gi
