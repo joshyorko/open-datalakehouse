@@ -1,23 +1,87 @@
+version: '3.8'
+
+x-shared-env: &shared-env
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: admin # MinIO username
+  AWS_SECRET_ACCESS_KEY: password # MinIO password
+
+x-network: &network
+  networks:
+    - dremio-spark
+
+x-storage: &storage
+  volumes:
+    - dremio-data:/opt/dremio/data
+    - minio-data:/data
 
 services:
+  # Nessie Catalog Server Using In-Memory Store
+  nessie:
+    image: projectnessie/nessie:latest
+    container_name: nessie
+    <<: *network
+    ports:
+      - "19120:19120"
 
+  # Minio Storage Server
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_DOMAIN=storage
+      - MINIO_REGION_NAME=us-east-1
+      - MINIO_REGION=us-east-1
+    <<: [*network, *storage]
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    command: ["server", "/data", "--console-address", ":9001"]
 
+  # Dremio
+  dremio:
+    platform: linux/x86_64
+    image: dremio/dremio-oss:latest
+    container_name: dremio
+    environment:
+      - DREMIO_JAVA_SERVER_EXTRA_OPTS=-Dpaths.dist=file:///opt/dremio/data/dist
+    <<: [*network, *storage]
+    ports:
+      - "9047:9047"
+      - "31010:31010"
+      - "32010:32010"
+      - "45678:45678"
 
+  # Spark
+  spark:
+    platform: linux/x86_64
+    image: alexmerced/spark35notebook:latest
+    container_name: spark
+    environment:
+      <<: *shared-env
+    <<: *network
+    ports: 
+      - "8080:8080"  # Master Web UI
+      - "7077:7077"  # Master Port
+      - "8888:8888"  # Notebook
+
+  # Spark Notebook
   spark_notebook:
     image: ghcr.io/joshyorko/datalake:spark
+    build: .
+    container_name: notebook
     volumes:
       - notebook-pv:/home/jovyan/work
-    build: .
+    <<: *network
     ports: 
-      - 8888:8888
-
-    container_name: notebook
+      - "8888:8888"  # Notebook
 
 volumes:
+  dremio-data:
+  minio-data:
   notebook-pv:
     external: true
-    
+
 networks:
-  default:
-    name: iceberg_env
-    driver: bridge 
+  dremio-spark:
