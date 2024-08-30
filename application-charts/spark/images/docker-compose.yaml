@@ -53,18 +53,7 @@ services:
       - "32010:32010"
       - "45678:45678"
 
-  # Spark
-  spark:
-    platform: linux/x86_64
-    image: alexmerced/spark35notebook:latest
-    container_name: spark
-    environment:
-      <<: *shared-env
-    <<: *network
-    ports: 
-      - "8080:8080"  # Master Web UI
-      - "7077:7077"  # Master Port
-      - "8888:8888"  # Notebook
+
 
   # Spark Notebook
   spark_notebook:
