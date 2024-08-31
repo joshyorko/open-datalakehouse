@@ -1,11 +1,11 @@
 dremio:
   auth:
     enabled: true
-    username: kdlocpanda
-    password: "jamisonVolvoMercedes724"
+    username: admin
+    password: "Pa22word"
     firstName: Josh
     lastName: Yorko
-    email: "joshua.yorko@gmail.com"
+    email: "email@example.com"
 
   masterCoordinator:
     persistence:
@@ -113,7 +113,7 @@ minio:
   enabled: true
   auth:
     rootUser: "minio-admin"
-    rootPassword: "jamisonVolvoMercedes724Minio"  # Change this to a secure password
+    rootPassword: "Pa22word"  # Change this to a secure password
   defaultBuckets: "dremio"
   tls:
     enabled: false
