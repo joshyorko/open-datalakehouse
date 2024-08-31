@@ -10,6 +10,7 @@ postgresql:
 
 service:
   type: LoadBalancer
+  LoadBalancerIP: ""
   port: 8088
 # Redis settings
 redis:
