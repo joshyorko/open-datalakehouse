@@ -9,5 +9,4 @@ spec:
     - name: "8888"
       port: 8888
       targetPort: 8888
-  selector:
-    io.kompose.service: spark
+
