@@ -25,21 +25,50 @@ check_pods_ready() {
   local timeout=${2:-300} # Default timeout of 5 minutes
   local start_time=$(date +%s)
 
+  # Check if namespace exists
+  if ! kubectl get namespace "$namespace" &>/dev/null; then
+    print_status "${RED}" "❌ Namespace $namespace does not exist."
+    return 1
+  fi
+
   while true; do
-    local not_ready_pods=$(kubectl get pods -n "$namespace" --no-headers 2>/dev/null | awk '$3 != "Running" || $2 != "1/1" {print $1}')
-    if [ -z "$not_ready_pods" ]; then
-      print_status "${GREEN}" "✔ All pods in the $namespace namespace are running and ready."
-      return 0
-    else
-      local current_time=$(date +%s)
-      local elapsed_time=$((current_time - start_time))
-      if [ $elapsed_time -ge $timeout ]; then
-        print_status "${RED}" "❌ Timeout reached. Some pods in $namespace are still not ready."
-        return 1
-      fi
-      print_status "${YELLOW}" "⏳ Waiting for pods in $namespace to be ready... (${elapsed_time}s elapsed)"
-      sleep 10
+    local current_time=$(date +%s)
+    local elapsed_time=$((current_time - start_time))
+
+    if [ $elapsed_time -ge $timeout ]; then
+      print_status "${RED}" "❌ Timeout reached. Some pods in $namespace are still not ready."
+      return 1
     fi
+
+    local pod_status=$(kubectl get pods -n "$namespace" -o json)
+    local total_pods=$(echo "$pod_status" | jq '.items | length')
+
+    if [ "$total_pods" -eq 0 ]; then
+      print_status "${YELLOW}" "⏳ No pods found in $namespace. Waiting for pods to be created... (${elapsed_time}s elapsed)"
+      sleep 10
+      continue
+    fi
+
+    local running_pods=$(echo "$pod_status" | jq '[.items[] | select(.status.phase == "Running")] | length')
+    local pending_pods=$(echo "$pod_status" | jq '[.items[] | select(.status.phase == "Pending")] | length')
+    local failed_pods=$(echo "$pod_status" | jq '[.items[] | select(.status.phase == "Failed")] | length')
+
+    if [ "$running_pods" -eq "$total_pods" ]; then
+      local not_ready_pods=$(echo "$pod_status" | jq '[.items[] | select(.status.conditions[] | select(.type == "Ready" and .status == "False"))] | length')
+      if [ "$not_ready_pods" -eq 0 ]; then
+        print_status "${GREEN}" "✔ All $total_pods pods in the $namespace namespace are running and ready."
+        return 0
+      fi
+    fi
+
+    print_status "${YELLOW}" "⏳ Waiting for pods in $namespace to be ready... (${elapsed_time}s elapsed)"
+    print_status "${YELLOW}" "   Total: $total_pods, Running: $running_pods, Pending: $pending_pods, Failed: $failed_pods"
+    
+    if [ "$failed_pods" -gt 0 ]; then
+      print_status "${RED}" "   Warning: $failed_pods pods have failed. Check the logs for more information."
+    fi
+
+    sleep 10
   done
 }
 
@@ -59,7 +88,7 @@ install_minikube() {
 display_summary() {
   print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
   echo "----------------------------------------"
-  kubectl rollout status deployment -n data-lakehouse
+  kubectl get services -n data-lakehouse
   echo "----------------------------------------"
   print_status "${YELLOW}" "To access these services, you may need to set up port-forwarding or use a LoadBalancer."
 }
