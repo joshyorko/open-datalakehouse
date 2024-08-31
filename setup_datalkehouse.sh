@@ -125,8 +125,6 @@ else
   print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
 fi
 
-
-
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
 kubectl create ns argocd
