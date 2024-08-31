@@ -1,11 +1,6 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.version: 1.33.0 (3ce457399)
-  labels:
-    io.kompose.service: spark
   name: spark
   namespace: data-lakehouse
 spec:
@@ -15,4 +10,4 @@ spec:
       port: 8888
       targetPort: 8888
   selector:
-    io.kompose.service: spark
+    app: spark
