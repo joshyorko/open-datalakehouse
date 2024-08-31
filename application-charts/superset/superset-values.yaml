@@ -3,7 +3,7 @@ postgresql:
   postgresqlPassword: superset
   persistence:
     enabled: true
-    storageClass: "longhorn"
+    storageClass: "standard"
     accessModes:
       - ReadWriteOnce
     size: 8Gi
@@ -13,7 +13,7 @@ redis:
   master:
     persistence:
       enabled: true
-      storageClass: "longhorn"
+      storageClass: "standard"
       accessModes:
         - ReadWriteOnce
       size: 8Gi
