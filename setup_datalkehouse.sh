@@ -73,18 +73,12 @@ if ! command -v kubectl &> /dev/null; then
   exit_gracefully
 fi
 
-# Detect if the script is being run interactively
-if [ -t 0 ]; then
-  # Running interactively
-  read -p "Do you want to use Minikube? (yes/no): " use_minikube
-else
-  # Running via curl | bash
-  print_status "${YELLOW}" "This script is running via curl | bash. To use it interactively, download the script and run it locally."
-  print_status "${YELLOW}" "Assuming 'no' for Minikube usage. If you want to use Minikube, please run the script locally."
-  use_minikube="no"
-fi
+# Check for existing Kubernetes context
+current_context=$(kubectl config current-context 2>/dev/null)
 
-if [[ "$use_minikube" == "yes" ]]; then
+if [ -z "$current_context" ]; then
+  print_status "${YELLOW}" "No current Kubernetes context detected. Setting up Minikube..."
+  
   # Check if Minikube is installed, and install it if not
   if ! command -v minikube &> /dev/null; then
     install_minikube
@@ -99,16 +93,7 @@ if [[ "$use_minikube" == "yes" ]]; then
   fi
   print_status "${GREEN}" "✔ Minikube started successfully."
 else
-  # Check for existing Kubernetes context
-  current_context=$(kubectl config current-context 2>/dev/null)
-  
-  if [ -z "$current_context" ]; then
-    print_status "${RED}" "❌ No current Kubernetes context detected and Minikube usage declined."
-    print_status "${YELLOW}" "Please set up a Kubernetes context or run the script locally to use Minikube."
-    exit_gracefully
-  else
-    print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
-  fi
+  print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
 fi
 
 # Set up Longhorn for storage
