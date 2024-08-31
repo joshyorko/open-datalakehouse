@@ -24,12 +24,13 @@ To simplify the deployment and management of a complete data lakehouse on Kubern
 
 - Kubernetes (The foundation of our platform)
 - ArgoCD (GitOps continuous delivery)
-- Minio (S3-compatible object storage)
-- Dremio (SQL query engine for data lakes)
-- Project Nessie (Multi-modal versioned data catalog)
-- Apache Spark (Distributed data processing)
-- Apache Superset (Business intelligence and data visualization)
-- Jupyter Labs (Custom PySpark Notebook with Spark Built in)
+- Minio (S3-compatible object storage, using Bitnami chart)
+- Dremio (SQL query engine for data lakes, using Bitnami chart)
+- Project Nessie (Multi-modal versioned data catalog, using Bitnami chart)
+  - PostgreSQL (Database for Nessie, using Bitnami chart)
+- Apache Spark (Distributed data processing, using a custom image)
+- Apache Superset (Business intelligence and data visualization, using official chart)
+- Jupyter Labs (Custom PySpark Notebook with Spark built in)
 
 ## Prerequisites
 
@@ -123,11 +124,14 @@ If you prefer to follow the steps manually or want to understand the process in 
 
 This project deploys a complete data lakehouse architecture on Kubernetes:
 
-- Minio serves as the object storage layer
-- Dremio provides SQL query capabilities over the data lake
-- Project Nessie acts as a versioned metadata catalog
-- Apache Superset offers data visualization and exploration
-- Custom Jupyter Lab Image with Spark built in for PySpark Notebooks enables distributed data processing.
+- Minio serves as the object storage layer (deployed using Bitnami Helm chart)
+- Dremio provides SQL query capabilities over the data lake (deployed using Bitnami Helm chart)
+- Project Nessie acts as a versioned metadata catalog (deployed using Bitnami Helm chart)
+  - Nessie relies on a PostgreSQL database, also deployed using a Bitnami Helm chart
+- Apache Superset offers data visualization and exploration (deployed using the official Helm chart)
+- Custom Jupyter Lab Image with Spark built in for PySpark Notebooks enables distributed data processing (custom image built and maintained by the project author)
+
+By using Bitnami charts for Dremio, Nessie, Minio, and PostgreSQL, we ensure consistent and well-maintained deployments of these components. The official Superset chart provides the latest features and best practices for deploying Superset. The custom Spark image allows for tailored configuration and dependencies specific to this project's needs.
 
 ## Dremio UI Setup for Nessie and S3 Storage
 
@@ -217,4 +221,3 @@ This project demonstrates a Kubernetes-native approach to building a modern data
 Remember, this setup is intended for development and testing purposes. For production deployments, additional security measures, high availability configurations, and performance tuning would be necessary.
 
 Contributions and feedback are welcome! Open an issue or submit a pull request to help improve this project.
-
