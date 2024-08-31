@@ -117,7 +117,7 @@ check_pods_ready "argocd"
 
 # Deploy the ArgoCD application of applications
 print_status "${YELLOW}" "⏳ Deploying the ArgoCD application of applications..."
-kubectl apply -f app-of-apps.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
 
 # Monitor the deployment
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
