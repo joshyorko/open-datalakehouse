@@ -137,13 +137,13 @@ minio:
 zookeeper:
   enabled: true
   replicaCount: 1
-  resources:
-    requests:
-      cpu: "1"
-      memory: "3Gi"
-    limits:
-      cpu: "2"
-      memory: "6Gi"
+  #resources:
+  #  requests:
+  #    cpu: "1"
+  #    memory: "3Gi"
+  #  limits:
+  #    cpu: "2"
+  #    memory: "6Gi"
   persistence:
     storageClass: "standard"
     size: 15Gi
