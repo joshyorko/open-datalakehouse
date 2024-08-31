@@ -33,7 +33,7 @@ To simplify the deployment and management of a complete data lakehouse on Kubern
 
 ## Prerequisites
 
-- Kubernetes cluster (tested on Minikube, k3s, EKS, EKS Fargate)
+- Kubernetes cluster (tested on Minikube, k3s, EKS)
 - Helm (version v3.15.2)
 - kubectl (compatible with your cluster version)
 - Basic understanding of Kubernetes concepts and ArgoCD

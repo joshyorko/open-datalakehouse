@@ -9,7 +9,7 @@ global:
 
   storageClass: "standard"
 
-replicaCount: 3
+replicaCount: 1
 # Specify any additional configuration values for the Nessie application
 # For example:
 # configKey: configValue
