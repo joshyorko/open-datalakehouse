@@ -2,68 +2,50 @@
 ![Logo](utils/nessie_dremio_sad.png)
 ## Technologies Used:
 
-ArgoCD, Minio, Dremio, Cert-Manager, Let's Encrypt, Apache Superset, Project Nessie, PostgreSQL, Spark, Nginx
 
-## The Tutorial: A Step-by-Step Guide to Controlled Chaos
-
-
-Prerequisites:
-- A Computer/s (one that doesn't burst into flames at the mention of Kubernetes)
-- A Kubernetes Cluster (Minikube for the faint of heart, [TechnoTim's k3s-ansible](https://github.com/techno-tim/k3s-ansible) for the brave)
-- MetalLB (unless you're on EKS, in which case, they've got you covered, bro)
-- Helm (because manually managing Kubernetes resources is like trying to herd cats while blindfolded)
-
-For this tutorial, we'll focus on Minikube. Don't worry, EKS is coming but only at the end.
+Whoami
 
 
+ArgoCD, Minio, Dremio,  Apache Superset, Project Nessie, PostgreSQL, jupyter labs, PySpark
 
-### Step 1: Install Minikube
 
-First, let's get Minikube up and running. Choose your poison:
+## Introduction
 
-```bash
-# For macOS
-brew install minikube
+This project is a demonstration of how to bootstrap a datalakehouse on Kubernetes. The project uses ArgoCD to deploy the applications on Kubernetes. The project uses Minio as the object storage, Dremio as query engine on the data lakehouse, Apache Superset as the BI tool, Project Nessie as the catalogue, and PostgreSQL as the metadata store. The project also uses Jupyter labs and PySpark for data processing and analysis.
 
-# For Linux
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
+## Prerequisites
 
-# For Windows (using PowerShell)
-New-Item -Path 'c:\' -Name 'minikube' -ItemType Directory -Force
-Invoke-WebRequest -OutFile 'c:\minikube\minikube.exe' -Uri 'https://github.com/kubernetes/minikube/releases/latest/download/minikube-windows-amd64.exe'
-Add-MemberPath 'c:\minikube'
-```
+- Kubernetes Cluster
+- Helm
+- ArgoCD CLI (Optional)
+- kubectl
+- Docker (Optional) - to build and run company datalake creation.
 
-### Step 2: Install Helm
+1. kubectl create ns longhorn-system
+2. helm repo add longhorn https://charts.longhorn.io
+3. helm repo update
+4. helm install longhorn longhorn/longhorn --namespace longhorn-system
+5. kubectl create ns argocd
+6. kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+7. argocd admin initial-password -n argocd  
+8. kubectl port-forward svc/argocd-server -n argocd 8080:443
+9. argocd login localhost:8080
+10. argocd account update-password
+11. kubectl apply -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
 
-Because who doesn't love another layer of abstraction?
 
-```bash
-# For macOS
-brew install helm
+This  will bootstrap your data lake for dremio setup and nessies setup I suggest you follow this guide here :
 
-# For Linux
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+This is for the dremio ui setup for nessie and also pretty much the same for s3 storage setup for dremio
 
-# For Windows (using PowerShell)
-choco install kubernetes-helm
-```
+Set root path to “warehouse” (any bucket you have access too) Set the following connection properties:
+fs.s3a.path.style.access to true
+fs.s3a.endpoint to dremio-minio:9000
+dremio.s3.compat to true
 
-### Step 3: Install ArgoCD and ArgoCD CLI (TODO LATER)
-
-Stay tuned for more pain... I mean, progress!
+kubectl get services -n data-lakehouse
 
 
 
-## Directory Explanations:
 
-1. `application-charts/`: Contains subdirectories for each application, each with its own `values.yaml` file for Helm chart configuration.
 
-2. `apps/`: Contains ArgoCD application definition YAML files for each application.
-
-3. `app-of-apps.yaml`: The main ArgoCD application that manages all other applications.
-
-4. `scripts/`: Contains scripts for managing backups and running Spark jobs and creating Fake data for the datalakehouse.'
-
-5. `utils/`: Contains utility scripts for managing the repository.
