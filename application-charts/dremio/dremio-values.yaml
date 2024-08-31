@@ -123,6 +123,13 @@ minio:
     loadBalancerIP: ""
     ports:
       api: 9000
+  resources:
+    requests:
+      memory: "6Gi"
+      cpu: "2"
+    limits:
+      memory: "12Gi"
+      cpu: "4"
   persistence:
     storageClass: "longhorn"
     size: 100Gi
@@ -130,6 +137,13 @@ minio:
 zookeeper:
   enabled: true
   replicaCount: 1
+  resources:
+    requests:
+      cpu: "1"
+      memory: "3Gi"
+    limits:
+      cpu: "2"
+      memory: "6Gi"
   persistence:
     storageClass: "longhorn"
     size: 15Gi
