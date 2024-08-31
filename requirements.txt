@@ -1,5 +1,0 @@
-pyspark
-pandas
-duckdb
-boto3
-pynessie

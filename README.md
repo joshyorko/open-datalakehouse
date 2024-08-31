@@ -3,8 +3,11 @@ title: Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes
 author: Joshua Yorko, @joshyorko, joshua.yorko@gmail.com
 ---
 # Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes
+
 ![Logo](utils/nessie_dremio_sad.png)
-**DISCLAIMER - THIS IS NOT MEANT FOR PRODUCTION! - Open a github issue first! - DISCLAIMER**
+
+**DISCLAIMER - THIS IS NOT MEANT FOR PRODUCTION! - Open a GitHub issue first! - DISCLAIMER**
+
 ---
 
 ## Whoami
@@ -30,17 +33,49 @@ To simplify the deployment and management of a complete data lakehouse on Kubern
 
 ## Prerequisites
 
-- Kubernetes cluster (tested on minikube, k3s, EKS, EKS Fargate)
+- Kubernetes cluster (tested on Minikube, k3s, EKS, EKS Fargate)
 - Helm (version v3.15.2)
 - kubectl (compatible with your cluster version)
 - Basic understanding of Kubernetes concepts and ArgoCD
 
 ## Quick Start
 
-Follow these steps to deploy the data lakehouse on your Kubernetes cluster:
+### Automated Setup Script
+
+To streamline the setup process, a bash script has been provided to automate the creation of a high-availability Minikube cluster and the deployment of the data lakehouse components. The script will guide you through the following steps:
+
+1. **Use Minikube or Current Context**: The script will ask if you want to use Minikube. If you choose Minikube, it will spin up a high-availability Minikube cluster using Docker and Containerd. If you prefer to use your current Kubernetes context, the script will proceed with that.
+
+2. **Graceful Exit**: If no Kubernetes context is detected after choosing not to use Minikube, the script will exit gracefully.
+
+3. **Deploy Components**: The script will automatically install Longhorn, ArgoCD, and the other components needed to set up the data lakehouse.
+
+### Running the Setup Script
+
+1. Clone this repository to your local machine:
+   ```bash
+   git clone https://github.com/joshyorko/open-datalakehouse.git
+   cd open-datalakehouse
+   ```
+
+2. Make the script executable:
+   ```bash
+   chmod +x setup_datalakehouse.sh
+   ```
+
+3. Run the script:
+   ```bash
+   ./setup_datalakehouse.sh
+   ```
+
+The script will handle the setup process, including the deployment of Longhorn, ArgoCD, and the data lakehouse components.
+
+### Manual Setup Steps (If Needed)
+
+If you prefer to follow the steps manually or want to understand the process in more detail, you can follow these steps:
 
 1. Set up Longhorn for storage:
-   ```
+   ```bash
    kubectl create ns longhorn-system
    helm repo add longhorn https://charts.longhorn.io
    helm repo update
@@ -48,39 +83,39 @@ Follow these steps to deploy the data lakehouse on your Kubernetes cluster:
    ```
 
 2. Set up ArgoCD:
-   ```
+   ```bash
    kubectl create ns argocd
    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
    ```
 
 3. Get the initial ArgoCD password:
-   ```
-   argocd admin initial-password -n argocd
+   ```bash
+   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
    ```
 
 4. Access ArgoCD UI:
-   ```
+   ```bash
    kubectl port-forward svc/argocd-server -n argocd 8080:443
    ```
 
 5. Log in to ArgoCD and change the password:
-   ```
+   ```bash
    argocd login localhost:8080
    argocd account update-password
    ```
 
 6. Deploy the ArgoCD application of applications:
-   ```
+   ```bash
    kubectl apply -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
    ```
 
 7. Monitor the deployment:
-   ```
+   ```bash
    kubectl get applications -n argocd
    ```
 
 8. Access the deployed applications:
-    ```
+    ```bash
     kubectl get services -n data-lakehouse
     ```
 
@@ -147,12 +182,12 @@ The project includes two Jupyter notebooks in the `DockerFiles/notebooks` direct
 A pre-built Docker image is available on Docker Hub, containing all the necessary dependencies for running the Jupyter notebooks and interacting with the data lakehouse. To use this image:
 
 1. Pull the image:
-   ```
+   ```bash
    docker pull jedock87/datalake-spark:latest
    ```
 
 2. Run the container:
-   ```
+   ```bash
    docker run -p 8888:8888 -v /path/to/your/notebooks:/home/jovyan/work jedock87/datalake-spark:latest
    ```
 
@@ -161,17 +196,17 @@ This will start a Jupyter Lab instance with PySpark and all required dependencie
 ## Troubleshooting
 
 1. Check ArgoCD application status:
-   ```
+   ```bash
    kubectl get applications -n argocd
    ```
 
 2. View logs for a specific pod:
-   ```
+   ```bash
    kubectl logs -n <namespace> <pod-name>
    ```
 
 3. Describe a pod for more details:
-   ```
+   ```bash
    kubectl describe pod -n <namespace> <pod-name>
    ```
 
@@ -182,3 +217,4 @@ This project demonstrates a Kubernetes-native approach to building a modern data
 Remember, this setup is intended for development and testing purposes. For production deployments, additional security measures, high availability configurations, and performance tuning would be necessary.
 
 Contributions and feedback are welcome! Open an issue or submit a pull request to help improve this project.
+
