@@ -73,9 +73,16 @@ if ! command -v kubectl &> /dev/null; then
   exit_gracefully
 fi
 
-# Prompt for Minikube usage
-print_status "${YELLOW}" "Do you want to use Minikube? (yes/no)"
-read -p "Enter your choice: " use_minikube
+# Detect if the script is being run interactively
+if [ -t 0 ]; then
+  # Running interactively
+  read -p "Do you want to use Minikube? (yes/no): " use_minikube
+else
+  # Running via curl | bash
+  print_status "${YELLOW}" "This script is running via curl | bash. To use it interactively, download the script and run it locally."
+  print_status "${YELLOW}" "Assuming 'no' for Minikube usage. If you want to use Minikube, please run the script locally."
+  use_minikube="no"
+fi
 
 if [[ "$use_minikube" == "yes" ]]; then
   # Check if Minikube is installed, and install it if not
@@ -97,6 +104,7 @@ else
   
   if [ -z "$current_context" ]; then
     print_status "${RED}" "❌ No current Kubernetes context detected and Minikube usage declined."
+    print_status "${YELLOW}" "Please set up a Kubernetes context or run the script locally to use Minikube."
     exit_gracefully
   else
     print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
