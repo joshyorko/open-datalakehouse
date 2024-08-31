@@ -1,18 +1,8 @@
+name: data-lakehouse
+description: A generated Helm Chart for datalakehouse from Skippbox Kompose
+version: 0.0.1
 apiVersion: v2
-name: spark-notebook
-description: A Helm Chart for deploying a data lakehouse environment using Spark and other components.
 keywords:
-  - docker-compose
-  - data-lakehouse
-  - spark
-  - dremio
-  - nessie
-  - minio
-  - jupyter
+  - datalakehouse
 sources:
-  - https://github.com/joshyorko/open-datalakehouse
-home: https://github.com/joshyorko/open-datalakehouse
-maintainers:
-  - name: Josh Yorko
-    email: josh.yorko@example.com
-icon: https://example.com/icon.png
+home:
