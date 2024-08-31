@@ -121,6 +121,10 @@ if [ -z "$current_context" ]; then
     exit_gracefully
   fi
   print_status "${GREEN}" "✔ Minikube started successfully."
+  
+  # Added sleep after Minikube start
+  print_status "${YELLOW}" "Waiting for 5 seconds to ensure Minikube is fully initialized..."
+  sleep 5
 else
   print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
 fi
@@ -134,6 +138,10 @@ check_pods_ready "argocd"
 # Deploy the ArgoCD application of applications
 print_status "${YELLOW}" "⏳ Deploying the ArgoCD application of applications..."
 kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
+
+# Added sleep after applying app of apps
+print_status "${YELLOW}" "Waiting for 5 seconds to allow ArgoCD to process the application..."
+sleep 5
 
 # Monitor the deployment
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
