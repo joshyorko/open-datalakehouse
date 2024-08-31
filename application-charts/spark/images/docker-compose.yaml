@@ -41,7 +41,7 @@ services:
 
   # Spark Notebook
   spark_notebook:
-    image: joshyorko/datalake-spark:latest
+    image: jedock87/datalake-spark:latest
     build: .
     container_name: notebook
     volumes:

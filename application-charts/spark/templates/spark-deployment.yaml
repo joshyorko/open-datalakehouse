@@ -25,7 +25,7 @@ spec:
             - mountPath: /home/docker/work
               name: notebook-data
       containers:
-        - image: ghcr.io/joshyorko/datalake:spark
+        - image: jedock87/datalake-spark:latest
           name: spark
           imagePullPolicy: Always
           ports:
@@ -43,5 +43,3 @@ spec:
         - name: notebook-data
           persistentVolumeClaim:
             claimName: notebook-data
-      imagePullSecrets:
-        - name: ghcr-login
