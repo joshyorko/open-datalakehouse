@@ -68,12 +68,7 @@ else
   fi
 fi
 
-# Set up Longhorn for storage
-echo "Setting up Longhorn for storage..."
-kubectl create ns longhorn-system
-helm repo add longhorn https://charts.longhorn.io
-helm repo update
-helm install longhorn longhorn/longhorn --namespace longhorn-system
+
 
 # Set up ArgoCD
 echo "Setting up ArgoCD..."
