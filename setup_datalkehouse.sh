@@ -114,7 +114,7 @@ if [ -z "$current_context" ]; then
   fi
 
   print_status "${YELLOW}" "Starting Minikube with high availability..."
-  minikube start --memory=8192 --cpus=8 
+  minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=8 
   
   if [ $? -ne 0 ]; then
     print_status "${RED}" "❌ Failed to start Minikube."
