@@ -26,7 +26,7 @@ check_pods_ready() {
   local start_time=$(date +%s)
 
   while true; do
-    local not_ready_pods=$(kubectl get pods -n "$namespace" --no-headers | awk '$3 != "Running" || $2 != "1/1" {print $1}')
+    local not_ready_pods=$(kubectl get pods -n "$namespace" --no-headers 2>/dev/null | awk '$3 != "Running" || $2 != "1/1" {print $1}')
     if [ -z "$not_ready_pods" ]; then
       print_status "${GREEN}" "✔ All pods in the $namespace namespace are running and ready."
       return 0
@@ -73,16 +73,18 @@ if ! command -v kubectl &> /dev/null; then
   exit_gracefully
 fi
 
-# Check if Minikube is installed, and install it if not
-if ! command -v minikube &> /dev/null; then
-  install_minikube
-fi
+# Check for existing Kubernetes context
+current_context=$(kubectl config current-context 2>/dev/null)
 
-# Prompt the user to decide whether to use Minikube
-read -p "Do you want to use Minikube? (yes/no): " use_minikube
+if [ -z "$current_context" ]; then
+  print_status "${YELLOW}" "No current Kubernetes context detected. Checking for Minikube..."
+  
+  # Check if Minikube is installed, and install it if not
+  if ! command -v minikube &> /dev/null; then
+    install_minikube
+  fi
 
-if [[ "$use_minikube" == "yes" ]]; then
-  print_status "${YELLOW}" "⏳ Starting Minikube with high availability..."
+  print_status "${YELLOW}" "Starting Minikube with high availability..."
   minikube start --ha --driver=docker --container-runtime=containerd
   
   if [ $? -ne 0 ]; then
@@ -91,23 +93,10 @@ if [[ "$use_minikube" == "yes" ]]; then
   fi
   print_status "${GREEN}" "✔ Minikube started successfully."
 else
-  current_context=$(kubectl config current-context)
-  
-  if [ -z "$current_context" ]; then
-    print_status "${RED}" "❌ No current Kubernetes context detected."
-    exit_gracefully
-  else
-    print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
-  fi
+  print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
 fi
 
-# Set up Longhorn for storage
-print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
-kubectl create ns longhorn-system
-helm repo add longhorn https://charts.longhorn.io
-helm repo update
-helm install longhorn longhorn/longhorn --namespace longhorn-system
-check_pods_ready "longhorn-system"
+
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
