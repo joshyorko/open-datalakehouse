@@ -73,12 +73,11 @@ if ! command -v kubectl &> /dev/null; then
   exit_gracefully
 fi
 
-# Check for existing Kubernetes context
-current_context=$(kubectl config current-context 2>/dev/null)
+# Prompt for Minikube usage
+print_status "${YELLOW}" "Do you want to use Minikube? (yes/no)"
+read -p "Enter your choice: " use_minikube
 
-if [ -z "$current_context" ]; then
-  print_status "${YELLOW}" "No current Kubernetes context detected. Checking for Minikube..."
-  
+if [[ "$use_minikube" == "yes" ]]; then
   # Check if Minikube is installed, and install it if not
   if ! command -v minikube &> /dev/null; then
     install_minikube
@@ -93,10 +92,24 @@ if [ -z "$current_context" ]; then
   fi
   print_status "${GREEN}" "✔ Minikube started successfully."
 else
-  print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
+  # Check for existing Kubernetes context
+  current_context=$(kubectl config current-context 2>/dev/null)
+  
+  if [ -z "$current_context" ]; then
+    print_status "${RED}" "❌ No current Kubernetes context detected and Minikube usage declined."
+    exit_gracefully
+  else
+    print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
+  fi
 fi
 
-
+# Set up Longhorn for storage
+print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
+kubectl create ns longhorn-system
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+helm install longhorn longhorn/longhorn --namespace longhorn-system
+check_pods_ready "longhorn-system"
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
