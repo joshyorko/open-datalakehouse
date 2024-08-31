@@ -8,6 +8,9 @@ postgresql:
       - ReadWriteOnce
     size: 8Gi
 
+service:
+  type: LoadBalancer
+  port: 8088
 # Redis settings
 redis:
   master:
