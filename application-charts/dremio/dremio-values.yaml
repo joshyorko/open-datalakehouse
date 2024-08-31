@@ -123,13 +123,13 @@ minio:
     loadBalancerIP: ""
     ports:
       api: 9000
-  resources:
-    requests:
-      memory: "6Gi"
-      cpu: "2"
-    limits:
-      memory: "12Gi"
-      cpu: "4"
+  #resources:
+  #  requests:
+  #    memory: "6Gi"
+  #    cpu: "2"
+  #  limits:
+  #    memory: "12Gi"
+  #    cpu: "4"
   persistence:
     storageClass: "standard"
     size: 100Gi
