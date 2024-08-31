@@ -1,7 +1,6 @@
 apiVersion: v2
 name: spark-notebook
 description: A Helm Chart for deploying a data lakehouse environment using Spark and other components.
-version: 0.1.0
 keywords:
   - docker-compose
   - data-lakehouse
@@ -17,10 +16,3 @@ maintainers:
   - name: Josh Yorko
     email: josh.yorko@example.com
 icon: https://example.com/icon.png
-dependencies:
-  - name: spark
-    version: "0.1.0"
-    repository: "https://charts.bitnami.com/bitnami"
-  - name: dremio
-    version: "0.1.9"
-    repository: "https://charts.bitnami.com/bitnami"
