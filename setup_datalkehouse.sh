@@ -59,7 +59,7 @@ install_minikube() {
 display_summary() {
   print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
   echo "----------------------------------------"
-  kubectl get services -n data-lakehouse
+  kubectl rollout status deployment -n data-lakehouse
   echo "----------------------------------------"
   print_status "${YELLOW}" "To access these services, you may need to set up port-forwarding or use a LoadBalancer."
 }
@@ -85,7 +85,7 @@ if [ -z "$current_context" ]; then
   fi
 
   print_status "${YELLOW}" "Starting Minikube with high availability..."
-  minikube start --ha --driver=docker --container-runtime=containerd
+  minikube start --memory=8192 --cpus=8 
   
   if [ $? -ne 0 ]; then
     print_status "${RED}" "❌ Failed to start Minikube."
