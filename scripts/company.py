@@ -1,8 +1,7 @@
 from faker import Faker
-import csv
-from tqdm import tqdm
+import pandas as pd
 import time
-
+from tqdm import tqdm
 
 fake = Faker()
 
@@ -48,6 +47,7 @@ class Employee:
         self.position = fake.job()
         self.salary = fake.random_int(min=40000, max=1500000)
         return self
+
 class Department:
     def __init__(self, company_name):
         self.company_name = company_name
@@ -71,59 +71,55 @@ class Department:
         self.functional_area = fake.random_element(["R&D", "Sales", "Finance", "HR", "Operations"])
         return self
 
-def create_and_write_departments(companies, department_csv_writer, fake):
+def create_and_write_departments(companies, fake):
     start_time = time.time()
+    department_data = []
     for company in tqdm(companies, desc="Creating departments"):
         num_departments = fake.random_int(min=1, max=3)
         for _ in tqdm(range(num_departments), desc=f"Departments for {company.name}", leave=False):
             new_department = Department(company.name).get_fake_department(fake)
-            department_csv_writer.writerow([new_department.company_name, new_department.department_name,
-                                            new_department.manager_id, new_department.budget, new_department.location,
-                                            new_department.start_date, new_department.end_date, 
-                                            new_department.department_size, new_department.functional_area])
+            department_data.append([new_department.company_name, new_department.department_name,
+                                    new_department.manager_id, new_department.budget, new_department.location,
+                                    new_department.start_date, new_department.end_date, 
+                                    new_department.department_size, new_department.functional_area])
+    
+    department_df = pd.DataFrame(department_data, columns=["Company_Name", "Department_Name", "Manager_ID", "Budget", "Location",
+                                                           "Start_Date", "End_Date", "Department_Size", "Functional_Area"])
+    department_df.to_parquet("departments.parquet", index=False)
     print(f"Time taken for creating departments: {time.time() - start_time} seconds")
 
-    
-def create_and_write_software_company(size, csv_writer, fake):
+def create_and_write_software_company(size, fake):
     start_time = time.time()
     companies = []
     unique_names = set()
+    company_data = []
     for _ in tqdm(range(size), desc="Creating companies"):
         new_company = SoftwareCompany().get_fake_company(fake, unique_names)
         companies.append(new_company)
-        csv_writer.writerow([new_company.name, new_company.industry, new_company.employees, new_company.revenue, new_company.location])
+        company_data.append([new_company.name, new_company.industry, new_company.employees, new_company.revenue, new_company.location])
+    
+    company_df = pd.DataFrame(company_data, columns=["Name", "Industry", "Employees", "Revenue", "Location"])
+    company_df.to_parquet("companies.parquet", index=False)
     print(f"Time taken for creating companies: {time.time() - start_time} seconds")
     return companies
 
-def create_and_write_employees(companies, employee_csv_writer, fake):
+def create_and_write_employees(companies, fake):
     start_time = time.time()
+    employee_data = []
     for company in tqdm(companies, desc="Creating employees"):
         company_domain = company.name.replace(' ', '').replace('.', '').replace(',', '').lower()
         for _ in tqdm(range(company.employees), desc=f"Employees for {company.name}", leave=False):
             new_employee = Employee(company.name).get_fake_employee(fake, company_domain)
-            employee_csv_writer.writerow([new_employee.company_name, new_employee.first_name, new_employee.last_name, new_employee.email, new_employee.position, new_employee.salary])
+            employee_data.append([new_employee.company_name, new_employee.first_name, new_employee.last_name, 
+                                  new_employee.email, new_employee.position, new_employee.salary])
+    
+    employee_df = pd.DataFrame(employee_data, columns=["Company_Name", "First_Name", "Last_Name", "Email", "Position", "Salary"])
+    employee_df.to_parquet("employees.parquet", index=False)
     print(f"Time taken for creating employees: {time.time() - start_time} seconds")
 
 # Main script starts here
 if __name__ == "__main__":
-    # Create and write companies
-    with open("companies.csv", "w", newline="") as csvfile:
-        csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(["Name", "Industry", "Employees", "Revenue", "Location"])
-        companies = create_and_write_software_company(int(input('Enter Amount of Companies to Create: ')), csv_writer, fake)
-        csvfile.flush()
-
-    # Create and write employees
-    with open("employees.csv", "w", newline="") as csvfile:
-        employee_csv_writer = csv.writer(csvfile)
-        employee_csv_writer.writerow(["Company_Name", "First_Name", "Last_Name", "Email", "Position", "Salary"])
-        create_and_write_employees(companies, employee_csv_writer, fake)
-        csvfile.flush()
-
-    # Create and write departments
-    with open("departments.csv", "w", newline="") as csvfile:
-        department_csv_writer = csv.writer(csvfile)
-        department_csv_writer.writerow(["Company_Name", "Department_Name", "Manager_ID", "Budget", "Location",
-                                        "Start_Date", "End_Date", "Department_Size", "Functional_Area"])
-        create_and_write_departments(companies, department_csv_writer, fake)
-        csvfile.flush()
+    size = int(input('Enter Amount of Companies to Create: '))
+    companies = create_and_write_software_company(size, fake)
+    create_and_write_employees(companies, fake)
+    create_and_write_departments(companies, fake)
