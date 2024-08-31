@@ -25,7 +25,7 @@ configOverrides:
 
 # Superset node settings
 supersetNode:
-  replicaCount: 1
+  replicaCount: 3
   resources:
     requests:
       cpu: "500m"
@@ -39,7 +39,7 @@ supersetNode:
 
 # Superset worker settings
 supersetWorker:
-  replicaCount: 1
+  replicaCount: 3
   resources:
     requests:
       cpu: "500m"

@@ -4,7 +4,7 @@ metadata:
   name: spark
   namespace: data-lakehouse
 spec:
-  replicas: 1 
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: spark
@@ -27,7 +27,7 @@ spec:
       containers:
         - image: jedock87/datalake-spark:latest
           name: spark
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           ports:
             - containerPort: 8888
               protocol: TCP

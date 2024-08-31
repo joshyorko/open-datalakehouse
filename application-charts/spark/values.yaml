@@ -1,2 +1,2 @@
-imagePullPolicy: Always
-replicaSets: 1
+imagePullPolicy: IfNotPresent
+replicaSets: 3

@@ -9,7 +9,7 @@ global:
 
   storageClass: "longhorn"
 
-replicaCount: 1
+replicaCount: 3
 # Specify any additional configuration values for the Nessie application
 # For example:
 # configKey: configValue
