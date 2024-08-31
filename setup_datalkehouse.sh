@@ -22,7 +22,7 @@ exit_gracefully() {
 # Function to check if all pods in a namespace are running and ready
 check_pods_ready() {
   local namespace=$1
-  local timeout=${2:-300} # Default timeout of 5 minutes
+  local timeout=${2:-500} # Default timeout of 5 minutes
   local start_time=$(date +%s)
 
   # Check if namespace exists
@@ -88,7 +88,7 @@ install_minikube() {
 display_summary() {
   print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
   echo "----------------------------------------"
-  kubectl get services -n data-lakehouse
+  kubectl rollout status deployment -n data-lakehouse
   echo "----------------------------------------"
   print_status "${YELLOW}" "To access these services, you may need to set up port-forwarding or use a LoadBalancer."
 }
@@ -114,7 +114,7 @@ if [ -z "$current_context" ]; then
   fi
 
   print_status "${YELLOW}" "Starting Minikube with high availability..."
-  minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=8 
+  minikube start  --memory=8192 --cpus=4
   
   if [ $? -ne 0 ]; then
     print_status "${RED}" "❌ Failed to start Minikube."
@@ -141,7 +141,8 @@ kubectl get applications -n argocd
 
 # Wait until all pods in the data-lakehouse namespace are running and ready
 print_status "${YELLOW}" "⏳ Waiting for all components in the data-lakehouse namespace to be ready..."
-check_pods_ready "data-lakehouse" 600 # Increased timeout to 10 minutes
+kubectl create ns data-lakehouse
+check_pods_ready "data-lakehouse" 500 # Increased timeout to 10 minutes
 
 # Get the initial ArgoCD password
 print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."

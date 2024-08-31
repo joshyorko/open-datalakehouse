@@ -9,7 +9,7 @@ metadata:
   name: spark
   namespace: data-lakehouse
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - name: "8888"
       port: 8888
