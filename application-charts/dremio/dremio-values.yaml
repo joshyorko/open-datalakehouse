@@ -20,13 +20,17 @@ dremio:
           secretKeyRef:
             name: dremio-keystore-password
             key: password
-    sidecars:
+    initContainers:
       - name: post-install
         image: curlimages/curl:latest
         command: ["/bin/sh", "-c"]
         args:
           - |
             sleep 60
+            until curl -s http://localhost:9047/api/v3/server_status | grep -q '"running":true'; do
+              echo "Waiting for Dremio to be ready..."
+              sleep 5
+            done
             response=$(curl -s -X POST "http://localhost:9047/apiv2/login" \
               -H "Content-Type: application/json" \
               -d '{"userName": "admin","password": "Pa22word"}')
