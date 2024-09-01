@@ -96,69 +96,69 @@ dremio:
           memory: "1Gi"
           cpu: "1"
 
-  postInstall:
-    enabled: true
-    job:
-      apiVersion: batch/v1
-      kind: Job
-      metadata:
-        name: dremio-post-install
-      spec:
-        template:
-          spec:
-            containers:
-              - name: dremio-post-install
-                image: alpine:3.14
-                command: ["/bin/sh", "-c"]
-                args:
-                  - |
-                    apk add --no-cache curl sed && \
-                    sleep 60s && \
-                    response=$(curl -s -X POST "http://dremio:9047/apiv2/login" \
-                      --header "Content-Type: application/json" \
-                      --data-raw "{
-                      \"userName\": \"admin\",
-                      \"password\": \"Pa22word\"
-                      }") && \
-                    echo $response && \
-                    token=$(echo "$response" | sed -n 's/.*\"token\":\"\([^\"]*\)\".*/\1/p') && \
-                    echo $token && \
-                    response=$(curl -X POST "http://dremio:9047/api/v3/catalog" \
-                      --header "Authorization: Bearer $token" \
-                      --header "Content-Type: application/json" \
-                      --data-raw "{
-                          \"entityType\": \"source\",
-                          \"config\": {
-                              \"nessieEndpoint\": \"http://nessie:19120/api/v2\",
-                              \"nessieAuthType\": \"NONE\",
-                              \"asyncEnabled\": true,
-                              \"isCachingEnabled\": true,
-                              \"maxCacheSpacePct\": 100,
-                              \"credentialType\": \"ACCESS_KEY\",
-                              \"awsAccessKey\": \"minio-admin\",
-                              \"awsAccessSecret\": \"Pa22word\",
-                              \"awsRootPath\": \"/warehouse\",
-                              \"propertyList\": [
-                                  {
-                                      \"name\": \"fs.s3a.path.style.access\",
-                                      \"value\": \"true\"
-                                  },
-                                  {
-                                      \"name\": \"fs.s3a.endpoint\",
-                                      \"value\": \"dremio-minio:9000\"
-                                  },
-                                  {
-                                      \"name\": \"dremio.s3.compat\",
-                                      \"value\": \"true\"
-                                  }
-                              ],
-                              \"secure\": false
-                          },
-                          \"name\": \"nessie\",
-                          \"type\": \"NESSIE\"
-                      }") && \
-                    echo $response
-            restartPolicy: OnFailure
+    postInstall:
+      enabled: true
+      job:
+        apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: dremio-post-install
+        spec:
+          template:
+            spec:
+              containers:
+                - name: dremio-post-install
+                  image: alpine:3.14
+                  command: ["/bin/sh", "-c"]
+                  args:
+                    - |
+                      apk add --no-cache curl sed && \
+                      sleep 60s && \
+                      response=$(curl -s -X POST "http://dremio:9047/apiv2/login" \
+                        --header "Content-Type: application/json" \
+                        --data-raw "{
+                        \"userName\": \"admin\",
+                        \"password\": \"Pa22word\"
+                        }") && \
+                      echo $response && \
+                      token=$(echo "$response" | sed -n 's/.*\"token\":\"\([^\"]*\)\".*/\1/p') && \
+                      echo $token && \
+                      response=$(curl -X POST "http://dremio:9047/api/v3/catalog" \
+                        --header "Authorization: Bearer $token" \
+                        --header "Content-Type: application/json" \
+                        --data-raw "{
+                            \"entityType\": \"source\",
+                            \"config\": {
+                                \"nessieEndpoint\": \"http://nessie:19120/api/v2\",
+                                \"nessieAuthType\": \"NONE\",
+                                \"asyncEnabled\": true,
+                                \"isCachingEnabled\": true,
+                                \"maxCacheSpacePct\": 100,
+                                \"credentialType\": \"ACCESS_KEY\",
+                                \"awsAccessKey\": \"minio-admin\",
+                                \"awsAccessSecret\": \"Pa22word\",
+                                \"awsRootPath\": \"/warehouse\",
+                                \"propertyList\": [
+                                    {
+                                        \"name\": \"fs.s3a.path.style.access\",
+                                        \"value\": \"true\"
+                                    },
+                                    {
+                                        \"name\": \"fs.s3a.endpoint\",
+                                        \"value\": \"dremio-minio:9000\"
+                                    },
+                                    {
+                                        \"name\": \"dremio.s3.compat\",
+                                        \"value\": \"true\"
+                                    }
+                                ],
+                                \"secure\": false
+                            },
+                            \"name\": \"nessie\",
+                            \"type\": \"NESSIE\"
+                        }") && \
+                      echo $response
+              restartPolicy: OnFailure
 
   service:
     type: LoadBalancer
