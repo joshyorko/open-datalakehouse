@@ -116,12 +116,12 @@ else
 fi
 
 # Set up Longhorn for storage
-print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
-kubectl create ns longhorn-system
-helm repo add longhorn https://charts.longhorn.io
-helm repo update
-helm install longhorn longhorn/longhorn --namespace longhorn-system
-check_pods_ready "longhorn-system"
+#print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
+#kubectl create ns longhorn-system
+#helm repo add longhorn https://charts.longhorn.io
+#helm repo update
+#helm install longhorn longhorn/longhorn --namespace longhorn-system
+#check_pods_ready "longhorn-system"
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
