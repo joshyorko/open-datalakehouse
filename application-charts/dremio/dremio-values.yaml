@@ -108,21 +108,21 @@ dremio:
           spec:
             containers:
               - name: dremio-post-install
-                image: busybox
+                image: alpine:3.14
                 command: ["/bin/sh", "-c"]
                 args:
                   - |
-                    sleep 60s
+                    apk add --no-cache curl sed && \
+                    sleep 60s && \
                     response=$(curl -s -X POST "$DREMIO_ENDPOINT/apiv2/login" \
                       --header "Content-Type: application/json" \
                       --data-raw "{
                       \"userName\": \"$DREMIO_USERNAME\",
                       \"password\": \"$DREMIO_PASSWORD\"
-                      }")
-                    echo $response
-                    token=$(echo "$response" | grep -oP '"token":\s*"\K[^"]+')
-                    echo $token
-
+                      }") && \
+                    echo $response && \
+                    token=$(echo "$response" | sed -n 's/.*\"token\":\"\([^\"]*\)\".*/\1/p') && \
+                    echo $token && \
                     response=$(curl -X POST "$DREMIO_ENDPOINT/api/v3/catalog" \
                       --header "Authorization: Bearer $token" \
                       --header "Content-Type: application/json" \
@@ -156,7 +156,7 @@ dremio:
                           },
                           \"name\": \"$NESSIE_CATALOG_NAME\",
                           \"type\": \"NESSIE\"
-                      }")
+                      }") && \
                     echo $response
                 envFrom:
                   - configMapRef:
