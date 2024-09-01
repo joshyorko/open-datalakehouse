@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: post-install-job
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/joshyorko/open-datalakehouse.git
+    targetRevision: HEAD
+    path: application-charts/dremio/post-install.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: data-lakehouse
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

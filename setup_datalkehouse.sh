@@ -146,20 +146,18 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-data
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
 kubectl get applications -n argocd
 
-# Wait until all pods in the data-lakehouse namespace are running and ready
-print_status "${YELLOW}" "⏳ Waiting for all components in the data-lakehouse namespace to be ready..."
-kubectl create ns data-lakehouse
-kubectl apply -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/dremio/post-install.yaml
-#check_pods_ready "data-lakehouse"  # Increased timeout to 10 minutes
 
 # Get the initial ArgoCD password
 print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."
 argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
+kubectl port-forward svc/argocd-server -n argocd 8080:443 &>/dev/null &
+sleep 5
+argocd login localhost:8080 --username admin --password "$argocd_password" --insecure
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
 
 
 
-display_summary
+
 
 # Option to run the Kubernetes job to create data in MinIO
 #if [ -f "jobs/main-minio-job.yaml" ]; then

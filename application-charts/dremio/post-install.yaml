@@ -35,6 +35,7 @@ spec:
               echo $response && \
               token=$(echo "$response" | sed -n 's/.*\"token\":\"\([^\"]*\)\".*/\1/p') && \
               echo $token && \
+              # Add Nessie catalog source
               response=$(curl -X POST "http://dremio:9047/api/v3/catalog" \
                 --header "Authorization: Bearer $token" \
                 --header "Content-Type: application/json" \
@@ -60,5 +61,37 @@ spec:
                     \"name\": \"nessie\",
                     \"type\": \"NESSIE\"
                 }") && \
-              echo $response
+              echo $response && \
+              # Add S3-compatible storage source (MinIO)
+              response=$(curl -X POST "http://dremio:9047/api/v3/source" \
+                --header "Authorization: Bearer $token" \
+                --header "Content-Type: application/json" \
+                --data-raw "{
+                    \"entityType\": \"source\",
+                    \"name\": \"upload-bucket\",
+                    \"type\": \"S3\",
+                    \"config\": {
+                        \"accessKey\": \"minio-admin\",
+                        \"accessSecret\": \"Pa22word\",
+                        \"rootPath\": \"/upload\",
+                        \"secure\": false,
+                        \"compatibilityMode\": true,
+                        \"propertyList\": [
+                            {\"name\": \"fs.s3a.endpoint\", \"value\": \"dremio-minio:9000\"},
+                            {\"name\": \"fs.s3a.path.style.access\", \"value\": \"true\"}
+                        ]
+                    }
+                }") && \
+              echo $response && \
+              # Create Bronze, Silver, and Gold spaces
+              for space in bronze silver gold; do \
+                response=$(curl -X POST "http://dremio:9047/api/v3/catalog" \
+                  --header "Authorization: Bearer $token" \
+                  --header "Content-Type: application/json" \
+                  --data-raw "{
+                      \"entityType\": \"space\",
+                      \"name\": \"$space\"
+                  }") && \
+                echo $response; \
+              done
       restartPolicy: OnFailure
