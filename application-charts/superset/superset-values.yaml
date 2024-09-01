@@ -3,21 +3,17 @@ postgresql:
   postgresqlPassword: superset
   persistence:
     enabled: true
-    storageClass: "longhorn"
+    storageClass: "standard"
     accessModes:
       - ReadWriteOnce
     size: 8Gi
 
-service:
-  type: LoadBalancer
-  LoadBalancerIP: ""
-  port: 8088
 # Redis settings
 redis:
   master:
     persistence:
       enabled: true
-      storageClass: "longhorn"
+      storageClass: "standard"
       accessModes:
         - ReadWriteOnce
       size: 8Gi
@@ -29,7 +25,7 @@ configOverrides:
 
 # Superset node settings
 supersetNode:
-  replicaCount: 3
+  replicaCount: 1
   resources:
     requests:
       cpu: "500m"
@@ -43,7 +39,7 @@ supersetNode:
 
 # Superset worker settings
 supersetWorker:
-  replicaCount: 3
+  replicaCount: 1
   resources:
     requests:
       cpu: "500m"
