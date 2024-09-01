@@ -1,11 +1,22 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: dremio-post-install-test
+  name: dremio-post-install
   namespace: data-lakehouse
 spec:
   template:
     spec:
+      initContainers:
+        - name: wait-for-dremio
+          image: alpine:3.14
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apk add --no-cache curl && \
+              until curl -sSf "http://dremio:9047" > /dev/null; do
+                echo "Waiting for Dremio to be ready...";
+                sleep 5;
+              done
       containers:
         - name: dremio-post-install
           image: alpine:3.14

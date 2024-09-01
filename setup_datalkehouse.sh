@@ -140,7 +140,8 @@ kubectl get applications -n argocd
 # Wait until all pods in the data-lakehouse namespace are running and ready
 print_status "${YELLOW}" "⏳ Waiting for all components in the data-lakehouse namespace to be ready..."
 kubectl create ns data-lakehouse
-check_pods_ready "data-lakehouse"  # Increased timeout to 10 minutes
+kubectl apply -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/dremio/post-install.yaml
+#check_pods_ready "data-lakehouse"  # Increased timeout to 10 minutes
 
 # Get the initial ArgoCD password
 print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."
