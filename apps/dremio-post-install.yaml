@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/joshyorko/open-datalakehouse.git
     targetRevision: HEAD
-    path: application-charts/dremio/post-install.yaml
+    path: application-charts/dremio/post-install
   destination:
     server: https://kubernetes.default.svc
     namespace: data-lakehouse
