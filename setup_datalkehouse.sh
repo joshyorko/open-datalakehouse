@@ -114,7 +114,7 @@ if [ -z "$current_context" ]; then
 else
   print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
 fi
-
+#
 # Set up Longhorn for storage
 #print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
 #kubectl create ns longhorn-system
