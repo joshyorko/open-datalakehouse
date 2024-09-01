@@ -45,11 +45,11 @@ To simplify the deployment and management of a complete data lakehouse on Kubern
 
 To streamline the setup process, a bash script has been provided to automate the creation of a high-availability Minikube cluster and the deployment of the data lakehouse components. The script will guide you through the following steps:
 
-1. **Use Minikube or Current Context**: The script will ask if you want to use Minikube. If you choose Minikube, it will spin up a high-availability Minikube cluster using Docker and Containerd. If you prefer to use your current Kubernetes context, the script will proceed with that.
+1. **Use Minikube or Current Context**: The script will detect if you have a Kubernetes context available. If not, it will  use Minikube for local development.
 
 2. **Graceful Exit**: If no Kubernetes context is detected after choosing not to use Minikube, the script will exit gracefully.
 
-3. **Deploy Components**: The script will automatically install Longhorn, ArgoCD, and the other components needed to set up the data lakehouse.
+3. **Deploy Components**: The script will automatically install  ArgoCD, and apply the  Open Datalakehouse from the app-of-apps.yaml manifest located in the root of the repository.
 
 ### Running the Setup Script
 
@@ -57,6 +57,7 @@ To streamline the setup process, a bash script has been provided to automate the
    ```bash
    git clone https://github.com/joshyorko/open-datalakehouse.git
    cd open-datalakehouse
+
    ```
 
 2. Make the script executable:
@@ -69,7 +70,13 @@ To streamline the setup process, a bash script has been provided to automate the
    ./setup_datalakehouse.sh
    ```
 
-The script will handle the setup process, including the deployment of Longhorn, ArgoCD, and the data lakehouse components.
+Optionally, you can run the script directly from the web using curl:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash
+```
+
+The script will handle the setup process, including the deployment of Longhorn, ArgoCD, and the data lakehouse components using the app-of-apps manifest.
 
 ### Manual Setup Steps (If Needed)
 
