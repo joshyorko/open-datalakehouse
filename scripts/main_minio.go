@@ -85,9 +85,9 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	// MinIO Client Setup
-	endpoint := "192.168.1.84:9000"
-	accessKey := "iyh4xQXQSLxHIxTAb2yE"
-	secretAccessKey := "PLbukM7ZQs8FJHixYMEW38E9CLN5fXeXpqsM7Kef"
+	endpoint := "dremio-minio:9000"
+	accessKey := "minio-admin"
+	secretAccessKey := "Pa22word"
 	useSSL := false
 
 	minioClient, err := minio.New(endpoint, &minio.Options{

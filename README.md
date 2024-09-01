@@ -41,6 +41,22 @@ To simplify the deployment and management of a complete data lakehouse on Kubern
 
 ## Quick Start
 
+TLDR;
+
+```bash
+curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash
+```
+
+or Assuming you have a cluster already setup
+
+```bash
+git clone https://github.com/joshyorko/open-datalakehouse.git
+cd open-datalakehouse
+kubectl create ns argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -f app-of-apps.yaml
+```
+
 ### Automated Setup Script
 
 To streamline the setup process, a bash script has been provided to automate the creation of a high-availability Minikube cluster and the deployment of the data lakehouse components. The script will guide you through the following steps:
@@ -70,62 +86,8 @@ To streamline the setup process, a bash script has been provided to automate the
    ./setup_datalakehouse.sh
    ```
 
-Optionally, you can run the script directly from the web using curl:
 
-```bash
-curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash
-```
 
-The script will handle the setup process, including the deployment of Longhorn, ArgoCD, and the data lakehouse components using the app-of-apps manifest.
-
-### Manual Setup Steps (If Needed)
-
-If you prefer to follow the steps manually or want to understand the process in more detail, you can follow these steps:
-
-1. Set up Longhorn for storage:
-   ```bash
-   kubectl create ns longhorn-system
-   helm repo add longhorn https://charts.longhorn.io
-   helm repo update
-   helm install longhorn longhorn/longhorn --namespace longhorn-system
-   ```
-
-2. Set up ArgoCD:
-   ```bash
-   kubectl create ns argocd
-   kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-   ```
-
-3. Get the initial ArgoCD password:
-   ```bash
-   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
-   ```
-
-4. Access ArgoCD UI:
-   ```bash
-   kubectl port-forward svc/argocd-server -n argocd 8080:443
-   ```
-
-5. Log in to ArgoCD and change the password:
-   ```bash
-   argocd login localhost:8080
-   argocd account update-password
-   ```
-
-6. Deploy the ArgoCD application of applications:
-   ```bash
-   kubectl apply -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
-   ```
-
-7. Monitor the deployment:
-   ```bash
-   kubectl get applications -n argocd
-   ```
-
-8. Access the deployed applications:
-    ```bash
-    kubectl get services -n data-lakehouse
-    ```
 
 ## Architecture Overview
 

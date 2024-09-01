@@ -1,11 +1,9 @@
 #!/bin/bash
 
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
-
 
 print_status() {
   local color=$1
@@ -13,19 +11,16 @@ print_status() {
   echo -e "${color}${message}${NC}"
 }
 
-
 exit_gracefully() {
   print_status "${RED}" "Exiting gracefully..."
   exit 1
 }
-
 
 check_pods_ready() {
   local namespace=$1
   local timeout=${2:-300} 
   local start_time=$(date +%s)
 
-  
   if ! kubectl get namespace "$namespace" &>/dev/null; then
     print_status "${RED}" "❌ Namespace $namespace does not exist."
     return 1
@@ -72,7 +67,6 @@ check_pods_ready() {
   done
 }
 
-
 install_minikube() {
   print_status "${YELLOW}" "⏳ Minikube is not installed. Installing Minikube..."
   curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
@@ -84,7 +78,6 @@ install_minikube() {
   print_status "${GREEN}" "✔ Minikube installed successfully."
 }
 
-
 display_summary() {
   print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
   echo "----------------------------------------"
@@ -93,15 +86,12 @@ display_summary() {
   print_status "${YELLOW}" "To access these services, you may need to set up port-forwarding or use a LoadBalancer."
 }
 
-
 print_status "${GREEN}" "🚀 Starting Data Lakehouse Setup"
-
 
 if ! command -v kubectl &> /dev/null; then
   print_status "${RED}" "❌ kubectl is not installed. Please install it and try again."
   exit_gracefully
 fi
-
 
 current_context=$(kubectl config current-context 2>/dev/null)
 
@@ -159,6 +149,14 @@ print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
 
 # Display summary of deployed services
 display_summary
+
+# Option to run the Kubernetes job to create data in MinIO
+read -p "Do you want to run the Kubernetes job to create data in MinIO? (y/n): " run_job
+if [ "$run_job" == "y" ]; then
+  print_status "${YELLOW}" "⏳ Running the Kubernetes job to create data in MinIO..."
+  kubectl apply -f jobs/main-minio-job.yaml
+  print_status "${GREEN}" "✔ Kubernetes job to create data in MinIO has been started."
+fi
 
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
 print_status "${YELLOW}" "To access the ArgoCD UI, run the following command in another terminal:"

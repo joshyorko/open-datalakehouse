@@ -1,5 +1,5 @@
 name: data-lakehouse
-description: A generated Helm Chart for datalakehouse from Skippbox Kompose
+description: A generated Helm Chart for datalakehouse
 version: 0.0.1
 apiVersion: v2
 keywords:
