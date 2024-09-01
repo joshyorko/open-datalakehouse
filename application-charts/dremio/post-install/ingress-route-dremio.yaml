@@ -1,0 +1,19 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dremio
+  namespace: data-lakehouse
+  annotations: 
+    kubernetes.io/ingress.class: traefik-internal
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`dremio.local.yorko.io`)
+      kind: Rule
+      services:
+        - name: dremio
+          port: 9047
+  tls:
+    secretName: local-yorko-io-staging-tls  # Use the copied secret in the cattle-system namespace
