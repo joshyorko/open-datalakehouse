@@ -20,53 +20,7 @@ dremio:
           secretKeyRef:
             name: dremio-keystore-password
             key: password
-    initContainers:
-      - name: post-install
-        image: curlimages/curl:latest
-        command: ["/bin/sh", "-c"]
-        args:
-          - |
-            sleep 60
-            until curl -s http://localhost:9047/api/v3/server_status | grep -q '"running":true'; do
-              echo "Waiting for Dremio to be ready..."
-              sleep 5
-            done
-            response=$(curl -s -X POST "http://localhost:9047/apiv2/login" \
-              -H "Content-Type: application/json" \
-              -d '{"userName": "admin","password": "Pa22word"}')
-            token=$(echo "$response" | jq -r '.token')
-            curl -X POST "http://localhost:9047/api/v3/catalog" \
-              -H "Authorization: _dremio$token" \
-              -H "Content-Type: application/json" \
-              -d '{
-                "entityType": "source",
-                "config": {
-                  "nessieEndpoint": "http://nessie:19120/api/v2",
-                  "nessieAuthType": "NONE",
-                  "asyncEnabled": true,
-                  "isCachingEnabled": true,
-                  "maxCacheSpacePct": 100,
-                  "credentialType": "ACCESS_KEY",
-                  "awsAccessKey": "minio-admin",
-                  "awsAccessSecret": "Pa22word",
-                  "awsRootPath": "/warehouse",
-                  "propertyList": [
-                    {"name": "fs.s3a.path.style.access","value": "true"},
-                    {"name": "fs.s3a.endpoint","value": "dremio-minio:9000"},
-                    {"name": "dremio.s3.compat","value": "true"}
-                  ],
-                  "secure": false
-                },
-                "name": "nessie",
-                "type": "NESSIE"
-              }'
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 200m
-            memory: 256Mi
+
 
   coordinator:
     persistence:
