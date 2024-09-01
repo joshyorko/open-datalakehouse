@@ -150,9 +150,7 @@ kubectl get applications -n argocd
 # Get the initial ArgoCD password
 print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."
 argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &>/dev/null &
-sleep 5
-argocd login localhost:8080 --username admin --password "$argocd_password" --insecure
+
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
 
 
