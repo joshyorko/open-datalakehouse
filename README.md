@@ -145,7 +145,9 @@ The project includes two Jupyter notebooks in the `DockerFiles/notebooks` direct
 
 ### Pre-built Docker Image
 
-A pre-built Docker image is available on Docker Hub, containing all the necessary dependencies for running the Jupyter notebooks and interacting with the data lakehouse. To use this image:
+
+A pre-built Docker image is available on Docker Hub, containing all the necessary dependencies for running the Jupyter notebooks and interacting with the data lakehouse. To use this image, you can visit [this link](https://hub.docker.com/r/jedock87/datalake-spark/tags).
+
 
 1. Pull the image:
    ```bash
