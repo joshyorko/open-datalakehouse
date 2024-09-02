@@ -98,6 +98,27 @@ start_k3s() {
   print_status "${GREEN}" "✔ K3s started successfully."
 }
 
+install_kubectl() {
+  print_status "${YELLOW}" "⏳ Installing kubectl..."
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to install kubectl."
+    exit_gracefully
+  fi
+  print_status "${GREEN}" "✔ kubectl installed successfully."
+}
+
+install_helm() {
+  print_status "${YELLOW}" "⏳ Installing Helm..."
+  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to install Helm."
+    exit_gracefully
+  fi
+  print_status "${GREEN}" "✔ Helm installed successfully."
+}
+
 display_summary() {
   print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
   echo "----------------------------------------"
@@ -117,9 +138,14 @@ display_summary() {
 
 print_status "${GREEN}" "🚀 Starting Data Lakehouse Setup"
 
+# Check for kubectl and install if not present
 if ! command -v kubectl &> /dev/null; then
-  print_status "${RED}" "❌ kubectl is not installed. Please install it and try again."
-  exit_gracefully
+  install_kubectl
+fi
+
+# Check for helm and install if not present
+if ! command -v helm &> /dev/null; then
+  install_helm
 fi
 
 PLATFORM="current"
@@ -199,7 +225,7 @@ check_pods_ready "argocd"
 
 # Deploy the ArgoCD application of applications
 print_status "${YELLOW}" "⏳ Deploying the ArgoCD application of applications..."
-kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/longhorn_setup/app-of-apps.yaml
 
 # Monitor the deployment
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
