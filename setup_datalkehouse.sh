@@ -241,6 +241,7 @@ print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
 # Ensure KUBECONFIG is correctly set
 if [ "$PLATFORM" == "k3s" ]; then
   echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> ~/.bashrc
+  
   export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
   print_status "${GREEN}" "✔ KUBECONFIG set to /etc/rancher/k3s/k3s.yaml"
 fi
@@ -251,3 +252,4 @@ kubectl get nodes
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
 print_status "${YELLOW}" "To access the ArgoCD UI, run the following command in another terminal:"
 echo "kubectl port-forward svc/argocd-server -n argocd 8080:443"
+source ~/.bashrc
