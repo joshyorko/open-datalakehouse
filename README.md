@@ -89,11 +89,11 @@ To streamline the setup process, a bash script has been provided to automate the
 ## Architecture Overview
 
 This project deploys a complete data lakehouse architecture on Kubernetes:
-
-- [Minio](https://min.io/) serves as the object storage layer (deployed using Bitnami Helm chart)
 - [Dremio](https://www.dremio.com/) provides SQL query capabilities over the data lake (deployed using Bitnami Helm chart)
 - [Project Nessie](https://projectnessie.org/) acts as a versioned metadata catalog (deployed using Bitnami Helm chart)
   - Nessie relies on a [PostgreSQL](https://www.postgresql.org/) database, also deployed using a Bitnami Helm chart
+- [Minio](https://min.io/) serves as the object storage layer (deployed using Bitnami Helm chart)
+
 - [Apache Superset](https://superset.apache.org/) offers data visualization and exploration (deployed using the official Helm chart)
 - Custom [Jupyter Lab](https://jupyter.org/) Image with Spark built in for PySpark Notebooks enables distributed data processing (custom image built and maintained by the project author)
 
@@ -165,7 +165,7 @@ This will start a Jupyter Lab instance with PySpark and all required dependencie
 
 ## Troubleshooting
 
-1. Check [ArgoCD application status](https://argo-cd.readthedocs.io/en/stable/user-guide/application-status/):
+1. Check the application status in ArgoCD:
    ```bash
    kubectl get applications -n argocd
    ```
