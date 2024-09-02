@@ -1,7 +1,9 @@
 ---
-title: Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes
-author: Joshua Yorko, @joshyorko, joshua.yorko@gmail.com
+
+title: Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes  
+author: Joshua Yorko, [@joshyorko](https://github.com/joshyorko), joshua.yorko@gmail.com  
 ---
+
 # Open Datalakehouse - Bootstrapping a Datalakehouse on Kubernetes
 
 ![Logo](utils/nessie_dremio_sad.png)
@@ -12,31 +14,30 @@ author: Joshua Yorko, @joshyorko, joshua.yorko@gmail.com
 
 ## Whoami
 
-Just a really big nerd who likes Distributed Systems and bootstrapping stuff 
+Just a really big nerd who likes Distributed Systems and bootstrapping stuff
 
-Josh Yorko - @joshyorko - joshua.yorko@gmail.com
+Josh Yorko - [@joshyorko](https://github.com/joshyorko) - joshua.yorko@gmail.com
 
 ## Goal
 
-To simplify the deployment and management of a complete data lakehouse on Kubernetes, demonstrating best practices in GitOps, distributed systems, and data engineering.
+To simplify the deployment and management of a complete data lakehouse on Kubernetes, demonstrating best practices in GitOps, distributed systems, and data engineering. This project assumes that you have a basic understanding of Kubernetes and GitOps principles as well as experience with the tools and technologies used in the data lakehouse architecture.  This data lake is meant to work, however you will need to fine tune your workloads resources obviously to scale to your needs.
 
 ## Technologies Used
 
-- Kubernetes (The foundation of our platform)
-- ArgoCD (GitOps continuous delivery)
-- Minio (S3-compatible object storage, using Bitnami chart)
-- Dremio (SQL query engine for data lakes, using Bitnami chart)
-- Project Nessie (Multi-modal versioned data catalog, using Bitnami chart)
-  - PostgreSQL (Database for Nessie, using Bitnami chart)
-- Apache Spark (Distributed data processing, using a custom image)
-- Apache Superset (Business intelligence and data visualization, using official chart)
-- Jupyter Labs (Custom PySpark Notebook with Spark built in)
+- [Kubernetes](https://kubernetes.io/) (The foundation of our platform)
+- [ArgoCD](https://argoproj.github.io/argo-cd/) (GitOps continuous delivery)
+- [Minio](https://min.io/) (S3-compatible object storage, using Bitnami chart)
+- [Dremio](https://www.dremio.com/) (SQL query engine for data lakes, using Bitnami chart)
+- [Project Nessie](https://projectnessie.org/) (Multi-modal versioned data catalog, using Bitnami chart)
+  - [PostgreSQL](https://www.postgresql.org/) (Database for Nessie, using Bitnami chart)
+- [Apache Superset](https://superset.apache.org/) (Business intelligence and data visualization, using official chart)
+- [Jupyter Labs](https://jupyter.org/) (Custom PySpark Notebook with Spark built in)
 
 ## Prerequisites
 
-- Kubernetes cluster (tested on Minikube, k3s, EKS)
-- Helm (version v3.15.2)
-- kubectl (compatible with your cluster version)
+- [Kubernetes cluster](https://kubernetes.io/docs/setup/) (tested on Minikube, k3s, EKS)
+- [Helm](https://helm.sh/docs/intro/install/) (version v3.15.2)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (compatible with your cluster version)
 - Basic understanding of Kubernetes concepts and ArgoCD
 
 ## Quick Start
@@ -61,11 +62,11 @@ kubectl apply -f app-of-apps.yaml
 
 To streamline the setup process, a bash script has been provided to automate the creation of a high-availability Minikube cluster and the deployment of the data lakehouse components. The script will guide you through the following steps:
 
-1. **Use Minikube or Current Context**: The script will detect if you have a Kubernetes context available. If not, it will  use Minikube for local development.
+1. **Use Minikube or Current Context**: The script will detect if you have a Kubernetes context available. If not, it will use Minikube for local development.
 
 2. **Graceful Exit**: If no Kubernetes context is detected after choosing not to use Minikube, the script will exit gracefully.
 
-3. **Deploy Components**: The script will automatically install  ArgoCD, and apply the  Open Datalakehouse from the app-of-apps.yaml manifest located in the root of the repository.
+3. **Deploy Components**: The script will automatically install ArgoCD and apply the Open Datalakehouse from the app-of-apps.yaml manifest located in the root of the repository.
 
 ### Running the Setup Script
 
@@ -73,7 +74,6 @@ To streamline the setup process, a bash script has been provided to automate the
    ```bash
    git clone https://github.com/joshyorko/open-datalakehouse.git
    cd open-datalakehouse
-
    ```
 
 2. Make the script executable:
@@ -86,37 +86,34 @@ To streamline the setup process, a bash script has been provided to automate the
    ./setup_datalakehouse.sh
    ```
 
-
-
-
 ## Architecture Overview
 
 This project deploys a complete data lakehouse architecture on Kubernetes:
 
-- Minio serves as the object storage layer (deployed using Bitnami Helm chart)
-- Dremio provides SQL query capabilities over the data lake (deployed using Bitnami Helm chart)
-- Project Nessie acts as a versioned metadata catalog (deployed using Bitnami Helm chart)
-  - Nessie relies on a PostgreSQL database, also deployed using a Bitnami Helm chart
-- Apache Superset offers data visualization and exploration (deployed using the official Helm chart)
-- Custom Jupyter Lab Image with Spark built in for PySpark Notebooks enables distributed data processing (custom image built and maintained by the project author)
+- [Minio](https://min.io/) serves as the object storage layer (deployed using Bitnami Helm chart)
+- [Dremio](https://www.dremio.com/) provides SQL query capabilities over the data lake (deployed using Bitnami Helm chart)
+- [Project Nessie](https://projectnessie.org/) acts as a versioned metadata catalog (deployed using Bitnami Helm chart)
+  - Nessie relies on a [PostgreSQL](https://www.postgresql.org/) database, also deployed using a Bitnami Helm chart
+- [Apache Superset](https://superset.apache.org/) offers data visualization and exploration (deployed using the official Helm chart)
+- Custom [Jupyter Lab](https://jupyter.org/) Image with Spark built in for PySpark Notebooks enables distributed data processing (custom image built and maintained by the project author)
 
 By using Bitnami charts for Dremio, Nessie, Minio, and PostgreSQL, we ensure consistent and well-maintained deployments of these components. The official Superset chart provides the latest features and best practices for deploying Superset. The custom Spark image allows for tailored configuration and dependencies specific to this project's needs.
 
 ## Dremio UI Setup for Nessie and S3 Storage
 
-After deploying Dremio, follow these steps to set up the connection to Nessie and S3 storage:
+After deploying Dremio, you will notice that the follow has been setup for you:
 
 1. Log in to the Dremio UI
-2. Add http://nessie:19120/api/v1 as the ness url in the Dremio UI
-3. Set the root path to "warehouse" (or any bucket you have access to)
-4. Set the following connection properties:
-   - `fs.s3a.path.style.access` to `true`
-   - `fs.s3a.endpoint` to `dremio-minio:9000`
-   - `dremio.s3.compat` to `true`
+2. Nessie Has been added as a data source
+3. Minio has been added as an Object Store
+4. Three Workspace spaces have been created for you:
+   - Bronze
+   - Silver
+   - Gold
 
 These settings will ensure that Dremio can properly communicate with Minio for S3-compatible storage and Nessie for metadata management.
 
-## Data Generation and Analysis Tools
+## Some Nice to Haves
 
 This project includes several tools to help you generate sample data and analyze it within your data lakehouse:
 
@@ -168,7 +165,7 @@ This will start a Jupyter Lab instance with PySpark and all required dependencie
 
 ## Troubleshooting
 
-1. Check ArgoCD application status:
+1. Check [ArgoCD application status](https://argo-cd.readthedocs.io/en/stable/user-guide/application-status/):
    ```bash
    kubectl get applications -n argocd
    ```
@@ -190,3 +187,4 @@ This project demonstrates a Kubernetes-native approach to building a modern data
 Remember, this setup is intended for development and testing purposes. For production deployments, additional security measures, high availability configurations, and performance tuning would be necessary.
 
 Contributions and feedback are welcome! Open an issue or submit a pull request to help improve this project.
+
