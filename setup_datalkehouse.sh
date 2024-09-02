@@ -88,7 +88,6 @@ install_k3s() {
   print_status "${GREEN}" "✔ K3s installed successfully."
 }
 
-
 start_k3s() {
   print_status "${YELLOW}" "⏳ Starting K3s..."
   sudo systemctl start k3s
@@ -96,7 +95,6 @@ start_k3s() {
     print_status "${RED}" "❌ Failed to start K3s."
     exit_gracefully
   fi
-  print_status "${GREEN}" "✔ K3s started successfully."
   export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
   print_status "${GREEN}" "✔ KUBECONFIG set to use K3s kubeconfig."
 }
@@ -239,6 +237,16 @@ print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."
 argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
 
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
+
+# Ensure KUBECONFIG is correctly set
+if [ "$PLATFORM" == "k3s" ]; then
+  echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> ~/.bashrc
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+  print_status "${GREEN}" "✔ KUBECONFIG set to /etc/rancher/k3s/k3s.yaml"
+fi
+
+# Verify KUBECONFIG setup
+kubectl get nodes
 
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
 print_status "${YELLOW}" "To access the ArgoCD UI, run the following command in another terminal:"
