@@ -93,7 +93,13 @@ This project deploys a complete data lakehouse architecture on Kubernetes:
 
 By using Bitnami charts for Dremio, Nessie, Minio, and PostgreSQL, we ensure consistent and well-maintained deployments of these components. The official Superset chart provides the latest features and best practices for deploying Superset. The custom Spark image allows for tailored configuration and dependencies specific to this project's needs.
 
-## Dremio UI Setup for Nessie and S3 Storage
+
+
+These settings will ensure that Dremio can properly communicate with Minio for S3-compatible storage and Nessie for metadata management.
+
+## Some Nice to Haves
+
+## Dremio UI Setup for Nessie and S3 Storage if You utilize the setup_datalakehouse.sh script
 
 After deploying Dremio, you will notice that the follow has been setup for you:
 
@@ -104,10 +110,6 @@ After deploying Dremio, you will notice that the follow has been setup for you:
    - Bronze
    - Silver
    - Gold
-
-These settings will ensure that Dremio can properly communicate with Minio for S3-compatible storage and Nessie for metadata management.
-
-## Some Nice to Haves
 
 This project includes several tools to help you generate sample data and analyze it within your data lakehouse:
 
