@@ -18,7 +18,7 @@ exit_gracefully() {
 
 check_pods_ready() {
   local namespace=$1
-  local timeout=${2:-300} 
+  local timeout=${2:-300}
   local start_time=$(date +%s)
 
   if ! kubectl get namespace "$namespace" &>/dev/null; then
@@ -78,6 +78,16 @@ install_minikube() {
   print_status "${GREEN}" "✔ Minikube installed successfully."
 }
 
+install_k3s() {
+  print_status "${YELLOW}" "⏳ Installing K3s..."
+  curl -sfL https://get.k3s.io | sh -
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to install K3s."
+    exit_gracefully
+  fi
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+  print_status "${GREEN}" "✔ K3s installed successfully."
+}
 
 print_status "${GREEN}" "🚀 Starting Data Lakehouse Setup"
 
@@ -86,29 +96,45 @@ if ! command -v kubectl &> /dev/null; then
   exit_gracefully
 fi
 
-current_context=$(kubectl config current-context 2>/dev/null)
+usage() {
+  echo "Usage: $0 {current|minikube|k3s}"
+  exit 1
+}
 
-if [ -z "$current_context" ]; then
-  print_status "${YELLOW}" "No current Kubernetes context detected. Setting up Minikube..."
-  
-  # Check if Minikube is installed, and install it if not
-  if ! command -v minikube &> /dev/null; then
-    install_minikube
-  fi
-
-  print_status "${YELLOW}" "Starting Minikube with high availability..."
-  minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=4
-  
-  if [ $? -ne 0 ]; then
-    print_status "${RED}" "❌ Failed to start Minikube."
-    exit_gracefully
-  fi
-  print_status "${GREEN}" "✔ Minikube started successfully."
-else
-  print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
+if [ $# -ne 1 ]; then
+  usage
 fi
 
+context=$1
 
+case $context in
+  current)
+    current_context=$(kubectl config current-context 2>/dev/null)
+    if [ -z "$current_context" ]; then
+      print_status "${RED}" "❌ No current Kubernetes context detected."
+      exit_gracefully
+    fi
+    print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
+    ;;
+  minikube)
+    if ! command -v minikube &> /dev/null; then
+      install_minikube
+    fi
+    print_status "${YELLOW}" "Starting Minikube with high availability..."
+    minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=4
+    if [ $? -ne 0 ]; then
+      print_status "${RED}" "❌ Failed to start Minikube."
+      exit_gracefully
+    fi
+    print_status "${GREEN}" "✔ Minikube started successfully."
+    ;;
+  k3s)
+    install_k3s
+    ;;
+  *)
+    usage
+    ;;
+esac
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
@@ -124,15 +150,11 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-data
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
 kubectl get applications -n argocd
 
-
 # Get the initial ArgoCD password
 print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."
 argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
 
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
-
-
-
 
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
 print_status "${YELLOW}" "To access the ArgoCD UI, run the following command in another terminal:"
