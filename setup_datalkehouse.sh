@@ -78,6 +78,26 @@ install_minikube() {
   print_status "${GREEN}" "✔ Minikube installed successfully."
 }
 
+install_k3s() {
+  print_status "${YELLOW}" "⏳ Installing K3s..."
+  curl -sfL https://get.k3s.io | sh -
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to install K3s."
+    exit_gracefully
+  fi
+  print_status "${GREEN}" "✔ K3s installed successfully."
+}
+
+start_k3s() {
+  print_status "${YELLOW}" "⏳ Starting K3s..."
+  sudo systemctl start k3s
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to start K3s."
+    exit_gracefully
+  fi
+  print_status "${GREEN}" "✔ K3s started successfully."
+}
+
 display_summary() {
   print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
   echo "----------------------------------------"
@@ -102,35 +122,74 @@ if ! command -v kubectl &> /dev/null; then
   exit_gracefully
 fi
 
-current_context=$(kubectl config current-context 2>/dev/null)
+PLATFORM="current"
 
-if [ -z "$current_context" ]; then
-  print_status "${YELLOW}" "No current Kubernetes context detected. Setting up Minikube..."
-  
-  # Check if Minikube is installed, and install it if not
-  if ! command -v minikube &> /dev/null; then
-    install_minikube
-  fi
+# Parse the platform flag
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    --platform)
+      PLATFORM="$2"
+      shift
+      ;;
+    *)
+      print_status "${RED}" "Unknown parameter passed: $1"
+      exit_gracefully
+      ;;
+  esac
+  shift
+done
 
-  print_status "${YELLOW}" "Starting Minikube with high availability..."
-  minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=4
-  
-  if [ $? -ne 0 ]; then
-    print_status "${RED}" "❌ Failed to start Minikube."
+case $PLATFORM in
+  "minikube")
+    print_status "${YELLOW}" "Setting up Minikube..."
+
+    if ! command -v minikube &> /dev/null; then
+      install_minikube
+    fi
+
+    print_status "${YELLOW}" "Starting Minikube with high availability..."
+    minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=4
+    
+    if [ $? -ne 0 ]; then
+      print_status "${RED}" "❌ Failed to start Minikube."
+      exit_gracefully
+    fi
+    print_status "${GREEN}" "✔ Minikube started successfully."
+    ;;
+
+  "k3s")
+    print_status "${YELLOW}" "Setting up K3s..."
+
+    if ! command -v k3s &> /dev/null; then
+      install_k3s
+    fi
+
+    start_k3s
+    ;;
+
+  "current")
+    current_context=$(kubectl config current-context 2>/dev/null)
+    if [ -z "$current_context" ]; then
+      print_status "${RED}" "❌ No current Kubernetes context detected. Please set up a cluster or specify --platform as minikube or k3s."
+      exit_gracefully
+    else
+      print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
+    fi
+    ;;
+
+  *)
+    print_status "${RED}" "❌ Invalid platform specified. Use --platform with current, minikube, or k3s."
     exit_gracefully
-  fi
-  print_status "${GREEN}" "✔ Minikube started successfully."
-else
-  print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
-fi
+    ;;
+esac
 
 # Set up Longhorn for storage
-#print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
-#kubectl create ns longhorn-system
-#helm repo add longhorn https://charts.longhorn.io
-#helm repo update
-#helm install longhorn longhorn/longhorn --namespace longhorn-system
-#check_pods_ready "longhorn-system"
+print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
+kubectl create ns longhorn-system
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+helm install longhorn longhorn/longhorn --namespace longhorn-system
+check_pods_ready "longhorn-system"
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
@@ -146,25 +205,11 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-data
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
 kubectl get applications -n argocd
 
-
 # Get the initial ArgoCD password
 print_status "${YELLOW}" "⏳ Getting the initial ArgoCD password..."
 argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
 
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
-
-
-
-
-
-# Option to run the Kubernetes job to create data in MinIO
-#if [ -f "jobs/main-minio-job.yaml" ]; then
-#  kubectl apply -f jobs/main-minio-job.yaml
-#  print_status "${GREEN}" "✔ Kubernetes job to create data in MinIO has been started."
-#else
-#  print_status "${RED}" "❌ File jobs/main-minio-job.yaml not found. Skipping the MinIO data creation job."
-#fi
-
 
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
 print_status "${YELLOW}" "To access the ArgoCD UI, run the following command in another terminal:"
