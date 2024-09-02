@@ -45,7 +45,17 @@ To simplify the deployment and management of a complete data lakehouse on Kubern
 TLDR;
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash
+## For Minikube:
+
+curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash -s -- --platform minikube
+
+## For K3s:
+
+curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash -s -- --platform k3s
+
+## For the Current Kubernetes Context:
+
+curl -sSL https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/setup_datalkehouse.sh | bash -s -- --platform current 
 ```
 
 or Assuming you have a cluster already setup
@@ -68,23 +78,7 @@ To streamline the setup process, a bash script has been provided to automate the
 
 3. **Deploy Components**: The script will automatically install ArgoCD and apply the Open Datalakehouse from the app-of-apps.yaml manifest located in the root of the repository.
 
-### Running the Setup Script
-
-1. Clone this repository to your local machine:
-   ```bash
-   git clone https://github.com/joshyorko/open-datalakehouse.git
-   cd open-datalakehouse
-   ```
-
-2. Make the script executable:
-   ```bash
-   chmod +x setup_datalakehouse.sh
-   ```
-
-3. Run the script:
-   ```bash
-   ./setup_datalakehouse.sh
-   ```
+##
 
 ## Architecture Overview
 
