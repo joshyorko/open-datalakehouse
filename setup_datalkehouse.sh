@@ -96,6 +96,8 @@ start_k3s() {
     exit_gracefully
   fi
   print_status "${GREEN}" "✔ K3s started successfully."
+  export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
+  print_status "${GREEN}" "✔ KUBECONFIG set to use K3s kubeconfig."
 }
 
 install_kubectl() {
