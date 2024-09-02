@@ -80,13 +80,14 @@ install_minikube() {
 
 install_k3s() {
   print_status "${YELLOW}" "⏳ Installing K3s..."
-  curl -sfL https://get.k3s.io | sh -
+  curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
   if [ $? -ne 0 ]; then
     print_status "${RED}" "❌ Failed to install K3s."
     exit_gracefully
   fi
   print_status "${GREEN}" "✔ K3s installed successfully."
 }
+
 
 start_k3s() {
   print_status "${YELLOW}" "⏳ Starting K3s..."
