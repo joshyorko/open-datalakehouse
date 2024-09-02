@@ -78,22 +78,6 @@ install_minikube() {
   print_status "${GREEN}" "✔ Minikube installed successfully."
 }
 
-display_summary() {
-  print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
-  echo "----------------------------------------"
-  
-  local resources=$(kubectl get all -n data-lakehouse -o json)
-  local total_resources=$(echo "$resources" | jq '.items | length')
-  
-  if [ "$total_resources" -eq 0 ]; then
-    print_status "${YELLOW}" "⏳ No resources found in the data-lakehouse namespace. Waiting for resources to be created..."
-  else
-    kubectl rollout status deployment -n data-lakehouse
-  fi
-  
-  echo "----------------------------------------"
-  print_status "${YELLOW}" "To access these services, you may need to set up port-forwarding or use a LoadBalancer."
-}
 
 print_status "${GREEN}" "🚀 Starting Data Lakehouse Setup"
 
@@ -124,13 +108,7 @@ else
   print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
 fi
 
-# Set up Longhorn for storage
-#print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
-#kubectl create ns longhorn-system
-#helm repo add longhorn https://charts.longhorn.io
-#helm repo update
-#helm install longhorn longhorn/longhorn --namespace longhorn-system
-#check_pods_ready "longhorn-system"
+
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
@@ -154,16 +132,6 @@ argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o js
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
 
 
-
-
-
-# Option to run the Kubernetes job to create data in MinIO
-#if [ -f "jobs/main-minio-job.yaml" ]; then
-#  kubectl apply -f jobs/main-minio-job.yaml
-#  print_status "${GREEN}" "✔ Kubernetes job to create data in MinIO has been started."
-#else
-#  print_status "${RED}" "❌ File jobs/main-minio-job.yaml not found. Skipping the MinIO data creation job."
-#fi
 
 
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
