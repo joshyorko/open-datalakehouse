@@ -18,7 +18,7 @@ exit_gracefully() {
 
 check_pods_ready() {
   local namespace=$1
-  local timeout=${2:-300}
+  local timeout=${2:-300} 
   local start_time=$(date +%s)
 
   if ! kubectl get namespace "$namespace" &>/dev/null; then
@@ -80,61 +80,143 @@ install_minikube() {
 
 install_k3s() {
   print_status "${YELLOW}" "⏳ Installing K3s..."
-  curl -sfL https://get.k3s.io | sh -
+  curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
   if [ $? -ne 0 ]; then
     print_status "${RED}" "❌ Failed to install K3s."
     exit_gracefully
   fi
-  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
   print_status "${GREEN}" "✔ K3s installed successfully."
+}
+
+start_k3s() {
+  print_status "${YELLOW}" "⏳ Starting K3s..."
+  sudo systemctl start k3s
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to start K3s."
+    exit_gracefully
+  fi
+  export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
+  print_status "${GREEN}" "✔ KUBECONFIG set to use K3s kubeconfig."
+}
+
+install_kubectl() {
+  print_status "${YELLOW}" "⏳ Installing kubectl..."
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to install kubectl."
+    exit_gracefully
+  fi
+  print_status "${GREEN}" "✔ kubectl installed successfully."
+}
+
+install_helm() {
+  print_status "${YELLOW}" "⏳ Installing Helm..."
+  curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  if [ $? -ne 0 ]; then
+    print_status "${RED}" "❌ Failed to install Helm."
+    exit_gracefully
+  fi
+  print_status "${GREEN}" "✔ Helm installed successfully."
+}
+
+display_summary() {
+  print_status "${GREEN}" "\n📊 Data Lakehouse Deployment Summary:"
+  echo "----------------------------------------"
+  
+  local resources=$(kubectl get all -n data-lakehouse -o json)
+  local total_resources=$(echo "$resources" | jq '.items | length')
+  
+  if [ "$total_resources" -eq 0 ]; then
+    print_status "${YELLOW}" "⏳ No resources found in the data-lakehouse namespace. Waiting for resources to be created..."
+  else
+    kubectl rollout status deployment -n data-lakehouse
+  fi
+  
+  echo "----------------------------------------"
+  print_status "${YELLOW}" "To access these services, you may need to set up port-forwarding or use a LoadBalancer."
 }
 
 print_status "${GREEN}" "🚀 Starting Data Lakehouse Setup"
 
+# Check for kubectl and install if not present
 if ! command -v kubectl &> /dev/null; then
-  print_status "${RED}" "❌ kubectl is not installed. Please install it and try again."
-  exit_gracefully
+  install_kubectl
 fi
 
-usage() {
-  echo "Usage: $0 {current|minikube|k3s}"
-  exit 1
-}
-
-if [ $# -ne 1 ]; then
-  usage
+# Check for helm and install if not present
+if ! command -v helm &> /dev/null; then
+  install_helm
 fi
 
-context=$1
+PLATFORM="current"
 
-case $context in
-  current)
-    current_context=$(kubectl config current-context 2>/dev/null)
-    if [ -z "$current_context" ]; then
-      print_status "${RED}" "❌ No current Kubernetes context detected."
+# Parse the platform flag
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    --platform)
+      PLATFORM="$2"
+      shift
+      ;;
+    *)
+      print_status "${RED}" "Unknown parameter passed: $1"
       exit_gracefully
-    fi
-    print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
-    ;;
-  minikube)
+      ;;
+  esac
+  shift
+done
+
+case $PLATFORM in
+  "minikube")
+    print_status "${YELLOW}" "Setting up Minikube..."
+
     if ! command -v minikube &> /dev/null; then
       install_minikube
     fi
+
     print_status "${YELLOW}" "Starting Minikube with high availability..."
     minikube start --ha --driver=docker --container-runtime=containerd --memory=8192 --cpus=4
+    
     if [ $? -ne 0 ]; then
       print_status "${RED}" "❌ Failed to start Minikube."
       exit_gracefully
     fi
     print_status "${GREEN}" "✔ Minikube started successfully."
     ;;
-  k3s)
-    install_k3s
+
+  "k3s")
+    print_status "${YELLOW}" "Setting up K3s..."
+
+    if ! command -v k3s &> /dev/null; then
+      install_k3s
+    fi
+
+    start_k3s
     ;;
+
+  "current")
+    current_context=$(kubectl config current-context 2>/dev/null)
+    if [ -z "$current_context" ]; then
+      print_status "${RED}" "❌ No current Kubernetes context detected. Please set up a cluster or specify --platform as minikube or k3s."
+      exit_gracefully
+    else
+      print_status "${GREEN}" "✔ Using the current Kubernetes context: $current_context"
+    fi
+    ;;
+
   *)
-    usage
+    print_status "${RED}" "❌ Invalid platform specified. Use --platform with current, minikube, or k3s."
+    exit_gracefully
     ;;
 esac
+
+# Set up Longhorn for storage
+print_status "${YELLOW}" "⏳ Setting up Longhorn for storage..."
+kubectl create ns longhorn-system
+helm repo add longhorn https://charts.longhorn.io
+helm repo update
+helm install longhorn longhorn/longhorn --namespace longhorn-system
+check_pods_ready "longhorn-system"
 
 # Set up ArgoCD
 print_status "${YELLOW}" "⏳ Setting up ArgoCD..."
@@ -144,7 +226,7 @@ check_pods_ready "argocd"
 
 # Deploy the ArgoCD application of applications
 print_status "${YELLOW}" "⏳ Deploying the ArgoCD application of applications..."
-kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
+kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/longhorn_setup/app-of-apps.yaml
 
 # Monitor the deployment
 print_status "${YELLOW}" "⏳ Monitoring the deployment..."
@@ -156,6 +238,18 @@ argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o js
 
 print_status "${GREEN}" "✔ Initial ArgoCD password: $argocd_password"
 
+# Ensure KUBECONFIG is correctly set
+if [ "$PLATFORM" == "k3s" ]; then
+  echo "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" >> ~/.bashrc
+  
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+  print_status "${GREEN}" "✔ KUBECONFIG set to /etc/rancher/k3s/k3s.yaml"
+fi
+
+# Verify KUBECONFIG setup
+kubectl get nodes
+
 print_status "${GREEN}" "🎉 Deployment completed successfully!"
 print_status "${YELLOW}" "To access the ArgoCD UI, run the following command in another terminal:"
 echo "kubectl port-forward svc/argocd-server -n argocd 8080:443"
+source ~/.bashrc
