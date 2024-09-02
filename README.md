@@ -155,12 +155,10 @@ A pre-built Docker image is available on Docker Hub, containing all the necessar
    ```bash
    docker pull jedock87/datalake-spark:latest
    ```
-
-2. Run the container:
+2. You can also build and deploy the Notebook locally  yourself using the provided Compose Files:
    ```bash
-   docker run -p 8888:8888 -v /path/to/your/notebooks:/home/jovyan/work jedock87/datalake-spark:latest
+   docker compose -f DockerFiles/docker-compose.yaml up -d
    ```
-
 This will start a Jupyter Lab instance with PySpark and all required dependencies pre-installed.
 
 ## Troubleshooting
@@ -172,12 +170,12 @@ This will start a Jupyter Lab instance with PySpark and all required dependencie
 
 2. View logs for a specific pod:
    ```bash
-   kubectl logs -n <namespace> <pod-name>
+   kubectl logs -n data-lakehouse <pod-name>
    ```
 
 3. Describe a pod for more details:
    ```bash
-   kubectl describe pod -n <namespace> <pod-name>
+   kubectl describe pod -n data-lakehouse <pod-name>
    ```
 
 ## Conclusion
