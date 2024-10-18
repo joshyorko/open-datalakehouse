@@ -49,7 +49,7 @@ spec:
                         \"maxCacheSpacePct\": 100,
                         \"credentialType\": \"ACCESS_KEY\",
                         \"awsAccessKey\": \"minio-admin\",
-                        \"awsAccessSecret\": \"Pa22word\",
+                        \"awsAccessSecret\": \"Pa22word22\",
                         \"awsRootPath\": \"/warehouse\",
                         \"propertyList\": [
                             {\"name\": \"fs.s3a.path.style.access\", \"value\": \"true\"},
@@ -72,7 +72,7 @@ spec:
                     \"type\": \"S3\",
                     \"config\": {
                         \"accessKey\": \"minio-admin\",
-                        \"accessSecret\": \"Pa22word\",
+                        \"accessSecret\": \"Pa22word22\",
                         \"rootPath\": \"/upload\",
                         \"secure\": false,
                         \"compatibilityMode\": true,
