@@ -1,5 +1,5 @@
 global:
-    defaultStorageClass: "gp2-expandable"
+    defaultStorageClass: "longhorn"
 
 dremio:
   auth:
