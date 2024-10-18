@@ -7,15 +7,51 @@ dremio:
     lastName: Yorko
     email: "email@example.com"
 
-
-
-
+masterCoordinator:
+  persistence:
+    storageClass: "local-path"
+    size: 8Gi
+  extraStartParams: >-
+    -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+    -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+  extraEnvVars:
+    - name: DREMIO_TLS_KEYSTORE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: dremio-keystore-password
+          key: password
+coordinator:
+  persistence:
+    storageClass: "local-path"
+    size: 8Gi
+  extraStartParams: >-
+    -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+    -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+  extraEnvVars:
+    - name: DREMIO_TLS_KEYSTORE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: dremio-keystore-password
+          key: password
 executor:
   common:
     persistence:
       storageClass: "local-path"
       size: 8Gi
-
+    extraStartParams: >-
+      -XX:+UseG1GC
+      -XX:+UseGCOverheadLimit
+      -XX:+ExplicitGCInvokesConcurrent
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
+      -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+      -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+    extraEnvVars:
+      - name: DREMIO_TLS_KEYSTORE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: dremio-keystore-password
+            key: password
     autoscaling:
       hpa:
           enabled: true
@@ -24,7 +60,18 @@ executor:
           targetCPU: "85"
           targetMemory: "85"
           
+  service:
+    type: LoadBalancer
 
+  extraVolumes:
+    - name: dremio-tls
+      secret:
+        secretName: dremio-tls-secret
+
+  extraVolumeMounts:
+    - name: dremio-tls
+      mountPath: /opt/dremio/tls
+      readOnly: true
 
 minio:
   enabled: true
