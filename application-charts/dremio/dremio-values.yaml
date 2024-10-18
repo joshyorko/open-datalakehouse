@@ -12,7 +12,7 @@ dremio:
 
 masterCoordinator:
   persistence:
-    size: 50Gi
+    size: 8Gi
     storageClass: "longhorn"
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
@@ -26,7 +26,7 @@ masterCoordinator:
 
 coordinator:
   persistence:
-    size: 20Gi
+    size: 8Gi
     storageClass: "longhorn"
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
@@ -41,7 +41,7 @@ coordinator:
 executor:
   common:
     persistence:
-      size: 50Gi
+      size: 8Gi
       storageClass: "longhorn"
     extraStartParams: >-
       -Xmx12g                         # Adjusted JVM heap size to match the new memory request
@@ -138,4 +138,4 @@ zookeeper:
   replicaCount: 1
   persistence:
     storageClass: "longhorn"
-    size: 20Gi
+    size: 8Gi
