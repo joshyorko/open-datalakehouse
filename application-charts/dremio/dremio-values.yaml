@@ -131,11 +131,11 @@ minio:
       api: 9000
   persistence:
     storageClass: "longhorn"
-    size: 200Gi
+    size: 50Gi
 
 zookeeper:
   enabled: true
-  replicaCount: 3
+  replicaCount: 1
   persistence:
     storageClass: "longhorn"
     size: 20Gi
