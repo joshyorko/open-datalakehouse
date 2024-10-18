@@ -63,8 +63,8 @@ executor:
     autoscaling:
       hpa:
         enabled: true                       # Enable HPA for the executor
-        minReplicas: 20                      # Minimum number of executor replicas
-        maxReplicas: 45                     # Maximum number of executor replicas
+        minReplicas: 3                      # Minimum number of executor replicas
+        maxReplicas: 5                     # Maximum number of executor replicas
         targetCPU: 75                       # Target CPU utilization percentage
         targetMemory: 80                    # Target memory utilization percentage
 
