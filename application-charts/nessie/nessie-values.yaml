@@ -7,7 +7,7 @@ global:
   ##
   imagePullSecrets: []
 
-  storageClass: "standard"
+  storageClass: "local-path"
 
 replicaCount: 1
 # Specify any additional configuration values for the Nessie application

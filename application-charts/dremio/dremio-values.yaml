@@ -9,7 +9,7 @@ dremio:
 
 masterCoordinator:
   persistence:
-    storageClass: ""
+    storageClass: "local-path"
     size: 8Gi
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
@@ -22,7 +22,7 @@ masterCoordinator:
           key: password
 coordinator:
   persistence:
-    storageClass: ""
+    storageClass: "local-path"
     size: 8Gi
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
@@ -36,7 +36,7 @@ coordinator:
 executor:
   common:
     persistence:
-      storageClass: ""
+      storageClass: "local-path"
       size: 8Gi
     extraStartParams: >-
       -XX:+UseG1GC
@@ -93,27 +93,14 @@ minio:
     LoadBalancerIP: ""
     ports:
       api: 9000
-  resources:
-    requests:
-      memory: "6Gi"
-      cpu: "2"
-    limits:
-      memory: "12Gi"
-      cpu: "4"
+ 
   persistence:
-    storageClass: ""
+    storageClass: "local-path"
     size: 100Gi
 
 zookeeper:
   enabled: true
   replicaCount: 1
-  resources:
-    requests:
-      cpu: "1"
-      memory: "3Gi"
-    limits:
-      cpu: "2"
-      memory: "6Gi"
   persistence:
-    storageClass: ""
+    storageClass: "local-path"
     size: 15Gi
