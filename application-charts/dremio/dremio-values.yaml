@@ -8,7 +8,7 @@ dremio:
     password: "Pa22word"
     firstName: "Josh"
     lastName: "Yorko"
-    email: "joshua.yorko@gainwelltechnologies.com"
+    email: "joshua.yorko@gmail.com"
 
 masterCoordinator:
   persistence:
