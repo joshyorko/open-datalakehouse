@@ -7,7 +7,7 @@ global:
   ##
   imagePullSecrets: []
 
-  storageClass: "longhorn"
+  storageClass: ""
 
 replicaCount: 1
 # Specify any additional configuration values for the Nessie application
