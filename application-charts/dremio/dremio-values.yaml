@@ -9,7 +9,7 @@ dremio:
 
 masterCoordinator:
   persistence:
-    storageClass: "local-path"
+    storageClass: "longhorn"
     size: 8Gi
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
@@ -22,7 +22,7 @@ masterCoordinator:
           key: password
 coordinator:
   persistence:
-    storageClass: "local-path"
+    storageClass: "longhorn"
     size: 8Gi
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
@@ -36,7 +36,7 @@ coordinator:
 executor:
   common:
     persistence:
-      storageClass: "local-path"
+      storageClass: "longhorn"
       size: 8Gi
     extraStartParams: >-
       -XX:+UseG1GC
@@ -95,12 +95,12 @@ minio:
       api: 9000
  
   persistence:
-    storageClass: "local-path"
+    storageClass: "longhorn"
     size: 100Gi
 
 zookeeper:
   enabled: true
   replicaCount: 1
   persistence:
-    storageClass: "local-path"
+    storageClass: "longhorn"
     size: 15Gi
