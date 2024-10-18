@@ -7,11 +7,43 @@ dremio:
     lastName: Yorko
     email: "email@example.com"
 
-  masterCoordinator:
+masterCoordinator:
+  persistence:
+    storageClass: ""
+    size: 8Gi
+  extraStartParams: >-
+    -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+    -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+  extraEnvVars:
+    - name: DREMIO_TLS_KEYSTORE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: dremio-keystore-password
+          key: password
+coordinator:
+  persistence:
+    storageClass: ""
+    size: 8Gi
+  extraStartParams: >-
+    -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
+    -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
+  extraEnvVars:
+    - name: DREMIO_TLS_KEYSTORE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: dremio-keystore-password
+          key: password
+executor:
+  common:
     persistence:
-      storageClass: "longhorn"
+      storageClass: ""
       size: 8Gi
     extraStartParams: >-
+      -XX:+UseG1GC
+      -XX:+UseGCOverheadLimit
+      -XX:+ExplicitGCInvokesConcurrent
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
       -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
       -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
     extraEnvVars:
@@ -20,42 +52,14 @@ dremio:
           secretKeyRef:
             name: dremio-keystore-password
             key: password
-
-
-  coordinator:
-    persistence:
-      storageClass: "longhorn"
-      size: 8Gi
-    extraStartParams: >-
-      -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
-      -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
-    extraEnvVars:
-      - name: DREMIO_TLS_KEYSTORE_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: dremio-keystore-password
-            key: password
-
-  executor:
-    common:
-      persistence:
-        storageClass: "longhorn"
-        size: 8Gi
-      extraStartParams: >-
-        -XX:+UseG1GC
-        -XX:+UseGCOverheadLimit
-        -XX:+ExplicitGCInvokesConcurrent
-        -XX:+HeapDumpOnOutOfMemoryError
-        -XX:HeapDumpPath=/opt/dremio/data/heap-dump.hprof
-        -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
-        -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
-      extraEnvVars:
-        - name: DREMIO_TLS_KEYSTORE_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: dremio-keystore-password
-              key: password
-
+    autoscaling:
+      hpa:
+          enabled: true
+          minReplicas: "3"
+          maxReplicas: "5"
+          targetCPU: "85"
+          targetMemory: "85"
+          
   service:
     type: LoadBalancer
 
@@ -97,7 +101,7 @@ minio:
       memory: "12Gi"
       cpu: "4"
   persistence:
-    storageClass: "longhorn"
+    storageClass: ""
     size: 100Gi
 
 zookeeper:
@@ -111,5 +115,5 @@ zookeeper:
       cpu: "2"
       memory: "6Gi"
   persistence:
-    storageClass: "longhorn"
+    storageClass: ""
     size: 15Gi
