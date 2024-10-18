@@ -11,28 +11,12 @@ masterCoordinator:
   persistence:
     storageClass: "local-path"
     size: 8Gi
-  extraStartParams: >-
-    -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
-    -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
-  extraEnvVars:
-    - name: DREMIO_TLS_KEYSTORE_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: dremio-keystore-password
-          key: password
+
 coordinator:
   persistence:
     storageClass: "local-path"
     size: 8Gi
-  extraStartParams: >-
-    -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
-    -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
-  extraEnvVars:
-    - name: DREMIO_TLS_KEYSTORE_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: dremio-keystore-password
-          key: password
+
 executor:
   common:
     persistence:
