@@ -159,7 +159,7 @@ case $PLATFORM in
     fi
 
     print_status "${YELLOW}" "Starting Minikube with high availability..."
-    minikube start --ha --memory=8192 --cpus=4
+    minikube start  --memory=8192 --cpus=4
     
     if [ $? -ne 0 ]; then
       print_status "${RED}" "\u274c Failed to start Minikube."
