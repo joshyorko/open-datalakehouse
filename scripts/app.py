@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from faker import Faker
 from tqdm import tqdm
 import boto3
-from src.creator import SoftwareCompany, Employee, Department
+from company import SoftwareCompany, Employee, Department
 import uvicorn
 
 fake = Faker()
@@ -24,9 +24,17 @@ class S3Details(BaseModel):
 @app.post("/create_companies")
 async def create_companies(request: CompanyRequest, s3_details: S3Details):
     try:
-        s3_client = boto3.client('s3')
+        s3_client = boto3.client(
+            's3',
+            endpoint_url='http://192.168.1.82:9000',
+            aws_access_key_id='minio-admin',
+            aws_secret_access_key='Pa22word22',
+            region_name='us-east-1'
+        )
         companies = create_and_write_software_company_to_s3(request.size, s3_client, s3_details.bucket_name, s3_details.database_name, fake)
-        return {"message": "Companies created successfully", "companies": companies}
+        create_and_write_employees_to_s3(companies, s3_client, s3_details.bucket_name, s3_details.database_name, fake)
+        create_and_write_departments_to_s3(companies, s3_client, s3_details.bucket_name, s3_details.database_name, fake)
+        return {"message": "Companies, employees, and departments created successfully", "companies": companies}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -92,5 +100,4 @@ def create_and_write_departments_to_s3(companies, s3_client, bucket_name, databa
 
 # Main script starts here
 if __name__ == "__main__":
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
