@@ -80,17 +80,6 @@ executor:
             memory: "4Gi"
         podLabels:
           workload: "data-science"
-    - name: analytics
-      overrides:
-        resources:
-          requests:
-            cpu: "4"
-            memory: "8Gi"
-          limits:
-            cpu: "4"
-            memory: "8Gi"
-        podLabels:
-          workload: "analytics"
 
 initContainers:
   - name: copy-default-conf
