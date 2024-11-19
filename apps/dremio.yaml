@@ -11,7 +11,7 @@ spec:
     targetRevision: 0.1.9  # Adjust version as needed
     helm:
       valueFiles:
-        - https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/dremio/dremio-values.yaml
+        - https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/dremio/values.yaml
 
   destination:
     server: https://kubernetes.default.svc
