@@ -1,13 +1,8 @@
 # Configuration values for the Nessie application Helm chart
 global:
-  imageRegistry: ""
-  ## E.g.
-  ## imagePullSecrets:
-  ##   - myRegistryKeySecretName
-  ##
-  imagePullSecrets: []
 
-  storageClass: ""
+
+  storageClass: "longhorn"
 
 replicaCount: 1
 # Specify any additional configuration values for the Nessie application

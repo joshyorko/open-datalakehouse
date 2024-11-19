@@ -1,5 +1,5 @@
 global:
-  defaultStorageClass: ""
+  defaultStorageClass: "longhorn"
 
 dremio:
   auth:
@@ -13,7 +13,7 @@ dremio:
 masterCoordinator:
   persistence:
     size: 8Gi
-    storageClass: ""
+    storageClass: "longhorn"
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
     -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -27,7 +27,7 @@ masterCoordinator:
 coordinator:
   persistence:
     size: 8Gi
-    storageClass: ""
+    storageClass: "longhorn"
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
     -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -42,7 +42,7 @@ executor:
   common:
     persistence:
       size: 8Gi
-      storageClass: ""
+      storageClass: "longhorn"
     extraStartParams: >-
       -Xmx12g                         
       -XX:MaxDirectMemorySize=8g      
@@ -60,13 +60,13 @@ executor:
           secretKeyRef:
             name: dremio-keystore-password
             key: password
-    autoscaling:
-      hpa:
-        enabled: true
-        minReplicas: 1
-        maxReplicas: 5
-        targetCPU: 75
-        targetMemory: 80
+    #autoscaling:
+    #  hpa:
+    #    enabled: true
+    #    minReplicas: 1
+    #    maxReplicas: 5
+    #    targetCPU: 75
+    #    targetMemory: 80
 
   engines:
     - name: data-science
@@ -80,17 +80,17 @@ executor:
             memory: "4Gi"
         podLabels:
           workload: "data-science"
-    #- name: analytics
-    #  overrides:
-    #    resources:
-    #      requests:
-    #        cpu: "2"
-    #        memory: "4Gi"
-    #      limits:
-    #        cpu: "2"
-    #        memory: "4Gi"
-    #    podLabels:
-    #      workload: "analytics"
+    - name: analytics
+      overrides:
+        resources:
+          requests:
+            cpu: "4"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        podLabels:
+          workload: "analytics"
 
 initContainers:
   - name: copy-default-conf
@@ -154,12 +154,12 @@ minio:
     ports:
       api: 9000
   persistence:
-    storageClass: ""
+    storageClass: "longhorn"
     size: 50Gi
 
 zookeeper:
   enabled: true
   replicaCount: 1
   persistence:
-    storageClass: ""
+    storageClass: "longhorn"
     size: 8Gi
