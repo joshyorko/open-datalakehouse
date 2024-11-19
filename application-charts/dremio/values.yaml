@@ -63,7 +63,7 @@ executor:
     autoscaling:
       hpa:
         enabled: true
-        minReplicas: 3
+        minReplicas: 1
         maxReplicas: 5
         targetCPU: 75
         targetMemory: 80
