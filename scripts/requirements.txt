@@ -3,4 +3,5 @@ Faker
 boto3
 fastapi
 uvicorn
-ollama
+pandas
+pyarrow
