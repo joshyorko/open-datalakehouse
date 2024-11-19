@@ -19,6 +19,8 @@ import (
 	"github.com/xitongsys/parquet-go/writer"
 )
 
+var randSource *rand.Rand
+
 type SoftwareCompany struct {
 	Name      string `parquet:"name=name, type=BYTE_ARRAY, convertedtype=UTF8"`
 	Industry  string `parquet:"name=industry, type=BYTE_ARRAY, convertedtype=UTF8"`
@@ -53,7 +55,7 @@ func RandomDate() string {
 	max := time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC).Unix()
 	delta := max - min
 
-	sec := rand.Int63n(delta) + min
+	sec := randSource.Int63n(delta) + min
 	return time.Unix(sec, 0).Format("2006-01-02")
 }
 
@@ -82,12 +84,12 @@ func uploadToMinIO(ctx context.Context, client *minio.Client, bucketName string,
 
 func main() {
 	startTime := time.Now()
-	rand.Seed(time.Now().UnixNano())
+	randSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// MinIO Client Setup
-	endpoint := "dremio-minio:9000"
+	endpoint := "192.168.1.83:9000"
 	accessKey := "minio-admin"
-	secretAccessKey := "Pa22word"
+	secretAccessKey := "Pa22word22"
 	useSSL := false
 
 	minioClient, err := minio.New(endpoint, &minio.Options{
@@ -142,7 +144,7 @@ func main() {
 					break
 				}
 				if attempts >= 100 {
-					name += fmt.Sprintf("-%d", rand.Intn(9999))
+					name += fmt.Sprintf("-%d", randSource.Intn(9999))
 					break
 				}
 			}
@@ -151,8 +153,8 @@ func main() {
 			company := SoftwareCompany{
 				Name:      name,
 				Industry:  fake.Industry(),
-				Employees: int32(rand.Intn(250000)), // Reduced for demo purposes
-				Revenue:   int64(rand.Intn(1000000000)),
+				Employees: int32(randSource.Intn(250000)), // Reduced for demo purposes
+				Revenue:   int64(randSource.Intn(1000000000)),
 				Location:  fake.City(),
 			}
 			companies = append(companies, company)
@@ -196,7 +198,7 @@ func main() {
 					LastName:    lastName,
 					Email:       email,
 					Position:    fake.JobTitle(),
-					Salary:      int32(rand.Intn(150000)),
+					Salary:      int32(randSource.Intn(150000)),
 				}
 				employeeWriter.Write(&employee)
 				employeeBar.Add(1)
@@ -220,19 +222,19 @@ func main() {
 			departmentWriter.RowGroupSize = 128 * 1024 * 1024 // 128M
 			departmentWriter.CompressionType = parquet.CompressionCodec_SNAPPY
 
-			numDepartments := rand.Intn(5) + 1 // Random number of departments
+			numDepartments := randSource.Intn(5) + 1 // Random number of departments
 			departmentBar := progressbar.NewOptions(numDepartments, progressbar.OptionSetDescription(fmt.Sprintf("Creating Departments for %s", company.Name)))
 
 			for i := 0; i < numDepartments; i++ {
 				department := Department{
 					CompanyName:    company.Name,
 					DepartmentName: "Department of " + fake.Industry(),
-					ManagerID:      int32(rand.Intn(999999)),
-					Budget:         int32(rand.Intn(500000)),
+					ManagerID:      int32(randSource.Intn(999999)),
+					Budget:         int32(randSource.Intn(500000)),
 					Location:       fake.City(),
 					StartDate:      RandomDate(),
 					EndDate:        RandomDate(),
-					DepartmentSize: int32(rand.Intn(100)),
+					DepartmentSize: int32(randSource.Intn(100)),
 					FunctionalArea: fake.Industry(),
 				}
 				departmentWriter.Write(&department)
