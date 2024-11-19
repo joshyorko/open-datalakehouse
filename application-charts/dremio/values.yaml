@@ -63,7 +63,7 @@ executor:
     #autoscaling:
     #  hpa:
     #    enabled: true
-    #    minReplicas: 1
+    #    minReplicas: 3
     #    maxReplicas: 5
     #    targetCPU: 75
     #    targetMemory: 80
@@ -73,13 +73,24 @@ executor:
       overrides:
         resources:
           requests:
+            cpu: "2"
+            memory: "8Gi"
+          limits:
+            cpu: "2"
+            memory: "8Gi"
+        podLabels:
+          workload: "data-science"
+    - name: analytics
+      overrides:
+        resources:
+          requests:
             cpu: "4"
             memory: "8Gi"
           limits:
             cpu: "4"
             memory: "8Gi"
         podLabels:
-          workload: "data-science"
+          workload: "analytics"
 
 initContainers:
   - name: copy-default-conf
