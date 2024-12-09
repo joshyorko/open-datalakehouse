@@ -80,7 +80,7 @@ setup_platform() {
       install_tool "minikube" "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube"
       print_status "${YELLOW}" "Starting Minikube with high availability..."
       # Start Minikube with specified resources
-      minikube start --memory=8192 --cpus=4
+      minikube start
       ;;
 
     "k3s")
