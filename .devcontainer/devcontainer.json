@@ -1,3 +1,18 @@
+// .devcontainer/devcontainer.json
 {
-    "image": "ghcr.io/joshyorko/joshyorko_devcontainer:latest"
+    "name": "Universal Dev Container",
+    "image": "mcr.microsoft.com/devcontainers/universal:focal",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "postCreateCommand": "curl -s https://raw.githubusercontent.com/joshyorko/joshyorko_devcontainer/refs/heads/main/.devcontainer/setup-dev-container.sh | bash; conda config --append channels defaults; cowsay -c ghostbusters -t 'This development environment Kicks Ass!'"
 }
