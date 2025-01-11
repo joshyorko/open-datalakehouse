@@ -1,5 +1,5 @@
 global:
-  defaultStorageClass: ""
+  defaultStorageClass: "longhorn"
 
 dremio:
   auth:
