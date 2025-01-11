@@ -101,7 +101,7 @@ initContainers:
       - name: tls-dir
         mountPath: /opt/dremio/tls
 service:
-  type: LoadBalancer
+  type: ClusterIP
 
 extraVolumes:
   - name: dremio-tls
