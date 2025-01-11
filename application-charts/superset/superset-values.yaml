@@ -69,9 +69,9 @@ init:
   createAdmin: true
   adminUser:
     username: joshyorko
-    firstname: Superset
+j   firstname: Superset
     lastname: Admin
-    email: email@example.com
+    email: joshua.yorko@gmail.com
     password: supersecretpassword
   initContainers:
     - name: wait-for-postgres
