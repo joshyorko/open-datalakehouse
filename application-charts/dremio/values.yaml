@@ -13,7 +13,7 @@ dremio:
 masterCoordinator:
   persistence:
     size: 8Gi
-    storageClass: ""
+    storageClass: "longhorn"
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
     -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -27,7 +27,7 @@ masterCoordinator:
 coordinator:
   persistence:
     size: 8Gi
-    storageClass: ""
+    storageClass: "longhorn"
   extraStartParams: >-
     -Ddremio.tls.keyStore=/opt/dremio/tls/dremio.jks
     -Ddremio.tls.keyStorePassword=${DREMIO_TLS_KEYSTORE_PASSWORD}
@@ -42,7 +42,7 @@ executor:
   common:
     persistence:
       size: 8Gi
-      storageClass: ""
+      storageClass: "longhorn"
     extraStartParams: >-
       -Xmx12g                         
       -XX:MaxDirectMemorySize=8g      
@@ -144,12 +144,12 @@ minio:
     ports:
       api: 9000
   persistence:
-    storageClass: ""
+    storageClass: "longhorn"
     size: 10Gi
 
 zookeeper:
   enabled: true
   replicaCount: 1
   persistence:
-    storageClass: ""
-    size: 4Gi
+    storageClass: "longhorn"
+    size: 8Gi
