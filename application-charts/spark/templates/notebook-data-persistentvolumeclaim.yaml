@@ -5,7 +5,7 @@ metadata:
   namespace: data-lakehouse
 spec:
   capacity:
-    storage: 10Gi
+    storage: 25Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
