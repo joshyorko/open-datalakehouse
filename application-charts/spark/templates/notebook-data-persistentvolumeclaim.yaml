@@ -5,12 +5,12 @@ metadata:
   namespace: data-lakehouse
 spec:
   capacity:
-    storage: 25Gi
+    storage: 100Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
 
-  storageClassName: "longhorn"
+  storageClassName: ""
   hostPath:
     path: "/mnt/data/notebook"
     type: DirectoryOrCreate
@@ -27,6 +27,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 25Gi
-  storageClassName: "longhorn"
+      storage: 10Gi
+  storageClassName: ""
   volumeName: notebook
