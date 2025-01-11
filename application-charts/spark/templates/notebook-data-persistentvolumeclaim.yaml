@@ -10,7 +10,7 @@ spec:
   accessModes:
     - ReadWriteOnce
 
-  storageClassName: ""
+  storageClassName: "longhorn"
   hostPath:
     path: "/mnt/data/notebook"
     type: DirectoryOrCreate
@@ -27,6 +27,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
-  storageClassName: ""
+      storage: 25Gi
+  storageClassName: "longhorn"
   volumeName: notebook
