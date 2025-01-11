@@ -73,11 +73,11 @@ executor:
       overrides:
         resources:
           requests:
-            cpu: "2"
-            memory: "4Gi"
+            cpu: "8"
+            memory: "16Gi"
           limits:
-            cpu: "2"
-            memory: "4Gi"
+            cpu: "8"
+            memory: "16Gi"
         podLabels:
           workload: "data-science"
   
@@ -145,11 +145,11 @@ minio:
       api: 9000
   persistence:
     storageClass: ""
-    size: 50Gi
+    size: 10Gi
 
 zookeeper:
   enabled: true
   replicaCount: 1
   persistence:
     storageClass: ""
-    size: 8Gi
+    size: 4Gi
