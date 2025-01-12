@@ -3,7 +3,7 @@ postgresql:
   postgresqlPassword: superset
   persistence:
     enabled: true
-    storageClass: ""
+    storageClass: "longhorn"
     accessModes:
       - ReadWriteOnce
     size: 8Gi
@@ -13,7 +13,7 @@ redis:
   master:
     persistence:
       enabled: true
-      storageClass: ""
+      storageClass: "longhorn"
       accessModes:
         - ReadWriteOnce
       size: 8Gi
@@ -69,9 +69,9 @@ init:
   createAdmin: true
   adminUser:
     username: joshyorko
-j   firstname: Superset
+    firstname: Superset
     lastname: Admin
-    email: joshua.yorko@gmail.com
+    email: email@example.com
     password: supersecretpassword
   initContainers:
     - name: wait-for-postgres
