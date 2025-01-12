@@ -6,7 +6,7 @@ postgresql:
     storageClass: "longhorn"
     accessModes:
       - ReadWriteOnce
-    size: 8Gi
+    size: 4Gi
 
 # Redis settings
 redis:
@@ -16,7 +16,7 @@ redis:
       storageClass: "longhorn"
       accessModes:
         - ReadWriteOnce
-      size: 8Gi
+      size: 4Gi
 
 # Configuration overrides
 configOverrides:
