@@ -8,3 +8,10 @@ replicaCount: 1
 # Specify any additional configuration values for the Nessie application
 # For example:
 # configKey: configValue
+
+
+service:
+  server:
+    ## @param service.server.type nessie service type
+    ##
+    type: ClusterIP
