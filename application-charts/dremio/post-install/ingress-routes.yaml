@@ -1,0 +1,42 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: superset-ingress-route
+  namespace: data-lakehouse
+  labels:
+    app: superset
+    release: superset
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`superset.192.168.1.150.sslip.io`)
+      kind: Rule
+      services:
+        - name: superset
+          port: 8088
+  #tls:
+  #  secretName: superset-tls
+
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dremio-ingress-route
+  namespace: data-lakehouse
+  labels:
+    app: dremio-coordinator
+    app.kubernetes.io/instance: dremio
+    app.kubernetes.io/name: dremio
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`dremio.192.168.1.150.sslip.io`)
+      kind: Rule
+      services:
+        - name: dremio
+          port: 9047
+  #tls:
+  #  secretName: dremio-tls
