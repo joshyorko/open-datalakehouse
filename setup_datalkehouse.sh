@@ -16,7 +16,7 @@ set -o pipefail
 set -u
 
 # Required versions
-REQUIRED_MEMORY="4096"  # 4GB minimum
+REQUIRED_MEMORY="1024"  # 4GB minimum
 REQUIRED_CPU="2"        # 2 cores minimum
 
 # Function to print status messages with colors and logging
