@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://charts.bitnami.com/bitnami
     chart: nessie
-    targetRevision: 0.101.3 # Adjust version as needed
+    targetRevision: 1.1.3  # Adjust version as needed
     helm:
       valueFiles:
         - https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/nessie/nessie-values.yaml
