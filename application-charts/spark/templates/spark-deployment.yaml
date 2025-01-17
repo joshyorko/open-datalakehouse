@@ -31,7 +31,13 @@ spec:
           ports:
             - containerPort: 8888
               protocol: TCP
-    
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "4000m"
+            limits:
+              memory: "16Gi"
+              cpu: "8000m"
           volumeMounts:
             - mountPath: /home/docker/work
               name: notebook-data
