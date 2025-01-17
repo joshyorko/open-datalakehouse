@@ -389,17 +389,6 @@ main() {
     print_status "${YELLOW}" "To access the ArgoCD UI, run:"
     echo "  kubectl port-forward svc/argocd-server -n argocd 8080:443"
     print_status "${YELLOW}" "Then visit: https://localhost:8080"
-
-    # Step 7: Set up data-lakehouse namespace
-    if ! kubectl get namespace data-lakehouse &>/dev/null; then
-        kubectl create namespace data-lakehouse
-    fi
-
-    print_status "${YELLOW}" "Applying configurations to data-lakehouse namespace..."
-    kubectl apply -n data-lakehouse -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/data-lakehouse-config.yaml
-    wait_for_namespace_resources "data-lakehouse" 600
-
-    print_status "${GREEN}" "🎉 Data-lakehouse namespace setup completed successfully!"
 }
 
 main "$@"
