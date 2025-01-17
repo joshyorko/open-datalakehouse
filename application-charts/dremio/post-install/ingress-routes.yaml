@@ -10,7 +10,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`superset.192.168.1.150.sslip.io`)
+    - match: Host(`superset.192.168.1.188.sslip.io`)
       kind: Rule
       services:
         - name: superset
@@ -33,7 +33,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`dremio.192.168.1.150.sslip.io`)
+    - match: Host(`dremio.192.168.1.188.sslip.io`)
       kind: Rule
       services:
         - name: dremio
