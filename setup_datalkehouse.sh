@@ -19,15 +19,34 @@ set -u
 REQUIRED_MEMORY="1024"  # 4GB minimum
 REQUIRED_CPU="2"        # 2 cores minimum
 
-# Function to print status messages with colors and logging
+###############################################################################
+# VERSION COMPARISON FUNCTIONS
+###############################################################################
+
+# Returns 0 if $1 >= $2 in "x.y.z" version format, else returns 1
+version_gte() {
+    local v1="$1"
+    local v2="$2"
+    # Natural sort the two versions, then check if the first line is v2
+    if [[ "$(printf '%s\n%s\n' "$v1" "$v2" | sort -V | head -n1)" == "$v2" ]]; then
+        # If v2 is <= v1, then v1 >= v2
+        return 0
+    else
+        return 1
+    fi
+}
+
+###############################################################################
+# PRINTING AND ERROR-TRAPPING
+###############################################################################
 print_status() {
-    local color=$1
-    local message=$2
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local color="$1"
+    local message="$2"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo -e "${color}[${timestamp}] ${message}${NC}" | tee -a setup.log
 }
 
-# Function to log errors and exit gracefully
 exit_gracefully() {
     local message=${1:-"An error occurred"}
     print_status "${RED}" "ERROR: ${message}"
@@ -35,21 +54,24 @@ exit_gracefully() {
     exit 1
 }
 
-# Trap errors and call exit_gracefully
 trap 'exit_gracefully "Command failed at line $LINENO"' ERR
 
-# Function to check system requirements
+###############################################################################
+# REQUIREMENTS CHECK
+###############################################################################
 check_requirements() {
     print_status "${YELLOW}" "Checking system requirements..."
-    
+
     # Check available memory
-    local available_memory=$(free -m | awk '/Mem:/ {print $2}')
+    local available_memory
+    available_memory=$(free -m | awk '/Mem:/ {print $2}')
     if [ "${available_memory}" -lt "${REQUIRED_MEMORY}" ]; then
         exit_gracefully "Insufficient memory. Required: ${REQUIRED_MEMORY}MB, Available: ${available_memory}MB"
     fi
 
     # Check available CPU cores
-    local available_cpu=$(nproc)
+    local available_cpu
+    available_cpu=$(nproc)
     if [ "${available_cpu}" -lt "${REQUIRED_CPU}" ]; then
         exit_gracefully "Insufficient CPU cores. Required: ${REQUIRED_CPU}, Available: ${available_cpu}"
     fi
@@ -65,11 +87,13 @@ check_requirements() {
     print_status "${GREEN}" "System requirements met ✓"
 }
 
-# Function to handle tool version checking
+###############################################################################
+# TOOL VERSION CHECK HELPERS
+###############################################################################
 check_tool_version() {
-    local tool_name=$1
-    local min_version=$2
-    local current_version
+    local tool_name="$1"
+    local min_version="$2"
+    local current_version=""
 
     case "${tool_name}" in
         "kubectl")
@@ -84,19 +108,16 @@ check_tool_version() {
             ;;
     esac
 
-    if ! command -v "semver" &> /dev/null; then
-        npm install -g semver &> /dev/null
-    fi
-
-    if ! semver -r ">=${min_version}" "${current_version}" &> /dev/null; then
+    # If current_version < min_version, fail
+    if ! version_gte "${current_version}" "${min_version}"; then
         exit_gracefully "${tool_name} version ${current_version} is less than required version ${min_version}"
     fi
 }
 
-function check_tool_version_silent() {
-    local tool_name=$1
-    local min_version=$2
-    local current_version
+check_tool_version_silent() {
+    local tool_name="$1"
+    local min_version="$2"
+    local current_version=""
 
     case "${tool_name}" in
         "kubectl")
@@ -110,22 +131,21 @@ function check_tool_version_silent() {
             ;;
     esac
 
-    if ! command -v "semver" &> /dev/null; then
-        npm install -g semver &> /dev/null
-    fi
-
-    if semver -r ">=${min_version}" "${current_version}" &> /dev/null; then
+    # Returns 0 if current_version >= min_version, else returns 1
+    if version_gte "${current_version}" "${min_version}"; then
         return 0
     else
         return 1
     fi
 }
 
-# Enhanced wait_for_namespace_resources function with better error handling
+###############################################################################
+# WAIT FOR NAMESPACE RESOURCES
+###############################################################################
 wait_for_namespace_resources() {
-    local namespace=$1
-    local timeout=${2:-300}
-    local interval=${3:-5}
+    local namespace="$1"
+    local timeout="${2:-300}"
+    local interval="${3:-5}"
     local elapsed=0
 
     print_status "${YELLOW}" "Waiting for resources in namespace ${namespace}..."
@@ -137,8 +157,11 @@ wait_for_namespace_resources() {
             continue
         fi
 
-        local unready_pods=$(kubectl get pods -n "${namespace}" --no-headers 2>/dev/null | grep -v "Running\|Completed" || true)
-        local unready_deployments=$(kubectl get deployments -n "${namespace}" --no-headers 2>/dev/null | awk '{
+        local unready_pods
+        unready_pods=$(kubectl get pods -n "${namespace}" --no-headers 2>/dev/null | grep -v "Running\|Completed" || true)
+
+        local unready_deployments
+        unready_deployments=$(kubectl get deployments -n "${namespace}" --no-headers 2>/dev/null | awk '{
             # Columns: NAME READY UP-TO-DATE AVAILABLE AGE
             split($2, a, "/")
             # If desired != ready or up-to-date != available, print
@@ -165,16 +188,19 @@ wait_for_namespace_resources() {
     return 1
 }
 
-# Enhanced install_tool function with version checking and backup
+###############################################################################
+# INSTALL TOOL (WITH BACKUP)
+###############################################################################
 install_tool() {
-    local tool_name=$1
-    local install_command=$2
-    local min_version=${3:-"0.0.0"}
+    local tool_name="$1"
+    local install_command="$2"
+    local min_version="${3:-"0.0.0"}"
     local backup_dir="/tmp/tool_backups"
 
     # Create backup directory if it doesn't exist
     mkdir -p "${backup_dir}"
 
+    # Check if already installed + meets version
     if command -v "${tool_name}" &> /dev/null; then
         if check_tool_version_silent "${tool_name}" "${min_version}"; then
             print_status "${GREEN}" "${tool_name} is already installed and meets version requirement (>=${min_version}). Skipping installation."
@@ -191,6 +217,7 @@ install_tool() {
 
     print_status "${YELLOW}" "Installing ${tool_name}..."
     if ! eval "${install_command}"; then
+        # If install fails, restore backup
         if [ -f "${backup_dir}/${tool_name}.backup" ]; then
             print_status "${YELLOW}" "Restoring ${tool_name} from backup..."
             sudo cp "${backup_dir}/${tool_name}.backup" "$(dirname "$(command -v "${tool_name}")")"
@@ -206,24 +233,26 @@ install_tool() {
     check_tool_version "${tool_name}" "${min_version}"
 }
 
-# Enhanced setup_platform function with resource checks
+###############################################################################
+# SETUP PLATFORM
+###############################################################################
 setup_platform() {
-    local platform=$1
-    local memory_requirement=${2:-"2048"}  # Default 2GB
-    
+    local platform="$1"
+    local memory_requirement="${2:-"2048"}"  # Default 2GB
+
     case "${platform}" in
         "minikube")
             install_tool "minikube" \
                 "curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && \
                 sudo install minikube-linux-amd64 /usr/local/bin/minikube" \
-                "1.30.0"  # Minimum minikube version
+                "1.30.0"
 
             print_status "${YELLOW}" "Starting Minikube with high availability..."
             minikube start --memory "${memory_requirement}" \
-                          --cpus 2 \
-                          --disk-size 20g \
-                          --kubernetes-version=stable \
-                          --addons=dashboard
+                           --cpus 2 \
+                           --disk-size 20g \
+                           --kubernetes-version=stable \
+                           --addons=dashboard
             ;;
 
         "k3s")
@@ -240,6 +269,7 @@ setup_platform() {
             ;;
 
         "current")
+            # Just assume user is already connected to a cluster
             if ! kubectl config current-context &>/dev/null; then
                 exit_gracefully "No current Kubernetes context detected"
             fi
@@ -251,10 +281,12 @@ setup_platform() {
     esac
 }
 
-# Function to validate ArgoCD installation
+###############################################################################
+# VALIDATE ARGOCD
+###############################################################################
 validate_argocd() {
     print_status "${YELLOW}" "Validating ArgoCD installation..."
-    
+
     # Check if ArgoCD CLI is installed
     if ! command -v argocd &> /dev/null; then
         print_status "${YELLOW}" "Installing ArgoCD CLI..."
@@ -283,10 +315,12 @@ validate_argocd() {
     exit_gracefully "ArgoCD server validation failed"
 }
 
-# Main script execution
+###############################################################################
+# MAIN
+###############################################################################
 main() {
     print_status "${GREEN}" "🚀 Starting Data Lakehouse Setup v${VERSION}"
-    
+
     # Parse command line arguments
     local platform="current"
     local memory_requirement="2048"
@@ -314,13 +348,15 @@ main() {
     # Initialize log file
     echo "=== Data Lakehouse Setup Log $(date) ===" > setup.log
 
-    # Run setup steps
+    # Step 1: Check requirements
     check_requirements
+
+    # Step 2: Setup platform
     setup_platform "${platform}" "${memory_requirement}"
-    
-    # Install required tools with version checks
+
+    # Step 3: Install required tools with version checks
     install_tool "kubectl" \
-        "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
+        "curl -LO https://dl.k8s.io/release/\$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl" \
         "1.24.0"
 
@@ -328,34 +364,31 @@ main() {
         "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash" \
         "3.10.0"
 
-    # Set up ArgoCD
+    # Step 4: Set up ArgoCD
     if ! kubectl get namespace argocd &>/dev/null; then
         kubectl create namespace argocd
     fi
 
     print_status "${YELLOW}" "Installing ArgoCD..."
     kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-    
     wait_for_namespace_resources "argocd" 600
     validate_argocd
 
-    # Deploy the application of applications
+    # Step 5: Deploy the application of applications
     print_status "${YELLOW}" "Deploying the ArgoCD application of applications..."
     kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
 
-    # Get ArgoCD initial password
+    # Step 6: Print ArgoCD initial password
     local argocd_password
     argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
-    
-    # Print success message and credentials
+
     print_status "${GREEN}" "🎉 Deployment completed successfully!"
     print_status "${YELLOW}" "ArgoCD Credentials:"
     echo "Username: admin"
     echo "Password: ${argocd_password}"
     print_status "${YELLOW}" "To access the ArgoCD UI, run:"
-    echo "kubectl port-forward svc/argocd-server -n argocd 8080:443"
+    echo "  kubectl port-forward svc/argocd-server -n argocd 8080:443"
     print_status "${YELLOW}" "Then visit: https://localhost:8080"
 }
 
-# Execute main function with all arguments
 main "$@"
