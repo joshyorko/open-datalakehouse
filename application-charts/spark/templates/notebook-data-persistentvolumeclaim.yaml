@@ -5,7 +5,7 @@ metadata:
   name: notebook-data
 spec:
   capacity:
-    storage: 50Gi
+    storage: 10Gi
   volumeMode: Filesystem
   accessModes:
     - ReadWriteOnce
@@ -24,6 +24,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: 10Gi
   storageClassName: ""  # Must match the PV's storageClassName
   volumeName: notebook-data  # Binds to the specified PV
