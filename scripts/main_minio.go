@@ -87,7 +87,7 @@ func main() {
 	randSource = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	// MinIO Client Setup
-	endpoint := "192.168.1.83:9000"
+	endpoint := "localhost:9000/"
 	accessKey := "minio-admin"
 	secretAccessKey := "Pa22word22"
 	useSSL := false
