@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://charts.bitnami.com/bitnami
     chart: dremio
-    targetRevision: 0.1.15 # Adjust version as needed
+    targetRevision: 0.1.13 # Adjust version as needed
     helm:
       valueFiles:
         - https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/dremio/values.yaml
