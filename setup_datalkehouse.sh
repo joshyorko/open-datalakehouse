@@ -378,6 +378,7 @@ main() {
     print_status "${YELLOW}" "Deploying the ArgoCD application of applications..."
     kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
 
+    wait_for_namespace_resources "data-lakehouse" 600
     # Step 6: Print ArgoCD initial password
     local argocd_password
     argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)

@@ -31,7 +31,7 @@ spec:
           ports:
             - containerPort: 8888
               protocol: TCP
-           resources:
+          resources:
             requests:
               memory: "4Gi"
               cpu: "2000m"
