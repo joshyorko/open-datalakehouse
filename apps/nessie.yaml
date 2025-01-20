@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://charts.bitnami.com/bitnami
+    repoURL: oci://registry-1.docker.io/bitnamicharts
     chart: nessie
-    targetRevision: 0.1.26 # Adjust version as needed
+    targetRevision: 1.1.3 # Adjust version as needed
     helm:
       valueFiles:
         - https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/application-charts/nessie/nessie-values.yaml
