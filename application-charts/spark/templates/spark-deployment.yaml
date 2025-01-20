@@ -18,12 +18,6 @@ spec:
       securityContext:
         fsGroup: 1000
       initContainers:
-        - name: wait-for-pvc
-          image: busybox
-          command: ["sh", "-c", "until [ -e /mnt/notebook-data ]; do echo 'Waiting for PVC to be bound'; sleep 2; done;"]
-          volumeMounts:
-            - mountPath: /mnt
-              name: notebook-data
         - name: init-permissions
           image: busybox
           command: ["sh", "-c", "chown -R 1000:1000 /home/docker/work"]
