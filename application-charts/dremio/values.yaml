@@ -145,7 +145,7 @@ minio:
       api: 9000
   persistence:
     storageClass: "local-path"
-    size: 10Gi
+    size: 50Gi
 
 zookeeper:
   enabled: true
