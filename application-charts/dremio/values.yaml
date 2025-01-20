@@ -74,10 +74,10 @@ executor:
         resources:
           requests:
             cpu: "4"
-            memory: "8Gi"
+            memory: "10Gi"
           limits:
             cpu: "4"
-            memory: "8Gi"
+            memory: "10Gi"
         podLabels:
           workload: "data-science"
   
