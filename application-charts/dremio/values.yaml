@@ -73,10 +73,10 @@ executor:
       overrides:
         resources:
           requests:
-            cpu: "4"
+            cpu: "2"
             memory: "8Gi"
           limits:
-            cpu: "4"
+            cpu: "2"
             memory: "8Gi"
         podLabels:
           workload: "data-science"
