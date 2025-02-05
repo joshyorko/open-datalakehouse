@@ -2,7 +2,7 @@
 global:
 
 
-  storageClass: "local-path"
+  storageClass: "longhorn"
 
 replicaCount: 1
 # Specify any additional configuration values for the Nessie application

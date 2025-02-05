@@ -84,7 +84,7 @@ spec:
                 }") && \
               echo $response && \
               # Create Bronze, Silver, and Gold spaces
-              for space in bronze silver gold; do \
+              for space in bronze joshRules gold; do \
                 response=$(curl -X POST "http://dremio:9047/api/v3/catalog" \
                   --header "Authorization: Bearer $token" \
                   --header "Content-Type: application/json" \
