@@ -4,13 +4,42 @@ metadata:
   name: dremio-ingress-route
   namespace: data-lakehouse
   annotations:
-    kubernetes.io/ingress.class: traefik
+    kubernetes.io/ingress.class: traefik-external
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`dremio.192.168.1.10.sslip.io`) 
+    - match: Host(`dremio.yorko.io`) 
       kind: Rule
       services:
         - name: dremio # Make sure to use the correct service name
           port: 9047  # Should match the service's exposed port
+
+
+  tls:
+    secretName: yorko-io-tls  # Use the copied secret in the minio namespace
+
+
+
+---
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+#nessie ingress route
+metadata:
+  name: nessie-ingress-route
+  namespace: data-lakehouse
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+spec:     
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`nessie.yorko.io`) 
+      kind: Rule
+      services:
+        - name: nessie # Make sure to use the correct service name
+          port: 19120  # Should match the service's exposed port
+
+  tls:
+    secretName: yorko-io-tls  # Use the copied secret in the minio namespace
