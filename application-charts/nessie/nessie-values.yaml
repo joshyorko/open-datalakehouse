@@ -1,17 +1,30 @@
 # Configuration values for the Nessie application Helm chart
 global:
-
-
   storageClass: "longhorn"
 
 replicaCount: 1
-# Specify any additional configuration values for the Nessie application
-# For example:
-# configKey: configValue
 
-
+# Nessie service configuration
 service:
   server:
-    ## @param service.server.type nessie service type
-    ##
     type: ClusterIP
+
+# Nessie Configuration Overrides
+configOverrides:
+  nessie:
+    catalog:
+      default-warehouse: "warehouse"
+      warehouses:
+        warehouse:
+          location: "s3://warehouse/"
+      service:
+        s3:
+          default-options:
+            endpoint: "http://dremio-minio:9000/"
+            access-key: "minio-admin"
+            secret-key: "Pa22word22"
+            path-style-access: "true"
+            region: "us-east-1"
+    server:
+      authentication:
+        enabled: "false"
