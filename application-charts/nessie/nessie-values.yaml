@@ -4,27 +4,33 @@ global:
 
 replicaCount: 1
 
-# Nessie service configuration
 service:
   server:
     type: ClusterIP
 
-# Nessie Configuration Overrides
-configOverrides:
-  nessie:
-    catalog:
-      default-warehouse: "warehouse"
-      warehouses:
-        warehouse:
-          location: "s3://warehouse/"
-      service:
-        s3:
-          default-options:
-            endpoint: "http://dremio-minio:9000/"
-            access-key: "minio-admin"
-            secret-key: "Pa22word22"
-            path-style-access: "true"
-            region: "us-east-1"
-    server:
-      authentication:
-        enabled: "false"
+#configOverrides:
+#  quarkus:
+#    nessie:
+#      catalog:
+#        default-warehouse: "warehouse"
+#        warehouses:
+#          warehouse:
+#            location: "s3://upload/"
+#        service:
+#          s3:
+#            default-options:
+#              endpoint: "http://dremio-minio:9000/"
+#              access-key: "urn:nessie-secret:quarkus:my-secrets-default"
+#              secret-key: "urn:nessie-secret:quarkus:my-secrets-default"
+#              path-style-access: "true"
+#              region: "us-east-1"
+#    server:
+#      authentication:
+#        enabled: "false"
+#
+#secretConfigOverrides:
+#  quarkus:
+#    my-secrets-default:
+#      name: "minio-admin"       # or "admin" if your MinIO user is "admin"
+#      secret: "Pa22word22" # or "password" if your MinIO password is "password"
+#
