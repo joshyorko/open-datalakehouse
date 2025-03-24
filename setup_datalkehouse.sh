@@ -19,6 +19,10 @@ set -u
 REQUIRED_MEMORY="1024"  # 4GB minimum
 REQUIRED_CPU="2"        # 2 cores minimum
 
+# Progress bar variables
+PROGRESS_BAR_WIDTH=50
+PROGRESS_BAR_STEP=0
+
 ###############################################################################
 # VERSION COMPARISON FUNCTIONS
 ###############################################################################
@@ -316,6 +320,85 @@ validate_argocd() {
 }
 
 ###############################################################################
+# PROGRESS BAR
+###############################################################################
+update_progress_bar() {
+    local progress=$1
+    local completed=$((progress * PROGRESS_BAR_WIDTH / 100))
+    local remaining=$((PROGRESS_BAR_WIDTH - completed))
+
+    printf "\rProgress: ["
+    for ((i = 0; i < completed; i++)); do
+        printf "#"
+    done
+    for ((i = 0; i < remaining; i++)); do
+        printf "-"
+    done
+    printf "] %d%%" "${progress}"
+}
+
+###############################################################################
+# CLEANUP AND ROLLBACK
+###############################################################################
+cleanup_and_rollback() {
+    print_status "${YELLOW}" "Performing cleanup and rollback..."
+
+    # Delete ArgoCD namespace
+    if kubectl get namespace argocd &>/dev/null; then
+        kubectl delete namespace argocd
+    fi
+
+    # Delete data-lakehouse namespace
+    if kubectl get namespace data-lakehouse &>/dev/null; then
+        kubectl delete namespace data-lakehouse
+    fi
+
+    print_status "${GREEN}" "Cleanup and rollback completed ✓"
+}
+
+###############################################################################
+# VALIDATE KUBERNETES CLUSTER CONFIGURATION
+###############################################################################
+validate_k8s_cluster_config() {
+    print_status "${YELLOW}" "Validating Kubernetes cluster configuration..."
+
+    # Check if the cluster is accessible
+    if ! kubectl cluster-info &>/dev/null; then
+        exit_gracefully "Kubernetes cluster is not accessible"
+    fi
+
+    # Check if the cluster has sufficient resources
+    local available_memory
+    available_memory=$(kubectl get nodes -o jsonpath='{.items[*].status.allocatable.memory}' | awk '{sum += $1} END {print sum}')
+    if [ "${available_memory}" -lt "${REQUIRED_MEMORY}" ]; then
+        exit_gracefully "Insufficient cluster memory. Required: ${REQUIRED_MEMORY}MB, Available: ${available_memory}MB"
+    fi
+
+    local available_cpu
+    available_cpu=$(kubectl get nodes -o jsonpath='{.items[*].status.allocatable.cpu}' | awk '{sum += $1} END {print sum}')
+    if [ "${available_cpu}" -lt "${REQUIRED_CPU}" ]; then
+        exit_gracefully "Insufficient cluster CPU cores. Required: ${REQUIRED_CPU}, Available: ${available_cpu}"
+    fi
+
+    print_status "${GREEN}" "Kubernetes cluster configuration is valid ✓"
+}
+
+###############################################################################
+# CHECK AVAILABLE DISK SPACE
+###############################################################################
+check_disk_space() {
+    print_status "${YELLOW}" "Checking available disk space..."
+
+    local available_disk_space
+    available_disk_space=$(df -m / | awk 'NR==2 {print $4}')
+    if [ "${available_disk_space}" -lt 20480 ]; then  # 20GB minimum
+        exit_gracefully "Insufficient disk space. Required: 20480MB, Available: ${available_disk_space}MB"
+    fi
+
+    print_status "${GREEN}" "Sufficient disk space available ✓"
+}
+
+###############################################################################
 # MAIN
 ###############################################################################
 main() {
@@ -350,19 +433,23 @@ main() {
 
     # Step 1: Check requirements
     check_requirements
+    update_progress_bar 10
 
     # Step 2: Setup platform
     setup_platform "${platform}" "${memory_requirement}"
+    update_progress_bar 30
 
     # Step 3: Install required tools with version checks
     install_tool "kubectl" \
         "curl -LO https://dl.k8s.io/release/\$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl && \
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl" \
         "1.24.0"
+    update_progress_bar 50
 
     install_tool "helm" \
         "curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash" \
         "3.10.0"
+    update_progress_bar 70
 
     # Step 4: Set up ArgoCD
     if ! kubectl get namespace argocd &>/dev/null; then
@@ -373,12 +460,15 @@ main() {
     kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
     wait_for_namespace_resources "argocd" 600
     validate_argocd
+    update_progress_bar 90
 
     # Step 5: Deploy the application of applications
     print_status "${YELLOW}" "Deploying the ArgoCD application of applications..."
     kubectl apply -n argocd -f https://raw.githubusercontent.com/joshyorko/open-datalakehouse/main/app-of-apps.yaml
 
     wait_for_namespace_resources "data-lakehouse" 600
+    update_progress_bar 100
+
     # Step 6: Print ArgoCD initial password
     local argocd_password
     argocd_password=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode)
