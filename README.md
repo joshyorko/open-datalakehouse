@@ -8,6 +8,8 @@ author: Joshua Yorko, [@joshyorko](https://github.com/joshyorko), joshua.yorko@g
 
 ![Logo](utils/nessie_dremio_sad.png)
 
+[![Open in DevPod!](https://devpod.sh/assets/open-in-devpod.svg)](https://devpod.sh/open#https://github.com/joshyorko/open-datalakehouse)
+
 **DISCLAIMER - THIS IS NOT MEANT FOR PRODUCTION! - Open a GitHub issue first! - DISCLAIMER**
 
 ---
