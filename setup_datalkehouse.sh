@@ -1,6 +1,9 @@
 #!/bin/bash
 # Script version
 VERSION="1.0.0"
+# Directory of this script
+SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 
 # Color definitions
 RED='\033[0;31m'
@@ -81,7 +84,7 @@ check_requirements() {
     fi
 
     # Check for required commands
-    local required_commands=("curl" "wget" "sudo")
+    local required_commands=("curl" "wget" "sudo" "docker")
     for cmd in "${required_commands[@]}"; do
         if ! command -v "${cmd}" &> /dev/null; then
             exit_gracefully "Required command not found: ${cmd}"
@@ -243,6 +246,7 @@ install_tool() {
 setup_platform() {
     local platform="$1"
     local memory_requirement="${2:-"2048"}"  # Default 2GB
+    print_status "${YELLOW}" "Configuring Kubernetes platform: ${platform}"
 
     case "${platform}" in
         "minikube")
@@ -271,7 +275,45 @@ setup_platform() {
             systemctl is-active --quiet k3s || systemctl start k3s
             sleep 10  # Give k3s time to initialize
             ;;
+        "kind")
+            # Ensure Docker is available for Kind
+            if ! command -v docker &>/dev/null; then
+                exit_gracefully "Docker is required for Kind cluster but not found"
+            fi
 
+            # Install Kind if not installed
+            install_tool "kind" \
+                "curl -Lo kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64 && \
+                 chmod +x kind && sudo mv kind /usr/local/bin/kind" \
+                "0.20.0"
+
+            # Generate Kind config if it doesn't exist
+            local kind_config_file="${SCRIPT_DIR}/kind-config.yaml"
+            if [ ! -f "${kind_config_file}" ]; then
+                print_status "${YELLOW}" "Creating Kind cluster configuration at ${kind_config_file}..."
+                cat <<EOF > "${kind_config_file}"
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+        protocol: TCP
+  - role: worker
+EOF
+            fi
+
+            # Confirmation prompt
+            read -p "Proceed to create Kind cluster? [Y/n] " proceed
+            proceed=${proceed:-Y}
+            if [[ ! "$proceed" =~ ^[Yy]$ ]]; then
+                exit_gracefully "Kind cluster creation aborted by user"
+            fi
+
+            print_status "${YELLOW}" "Creating Kind cluster..."
+            kind create cluster --config "${kind_config_file}" --name datalakehouse --wait 5m
+            ;;
         "current")
             # Just assume user is already connected to a cluster
             if ! kubectl config current-context &>/dev/null; then
@@ -419,7 +461,7 @@ main() {
                 shift 2
                 ;;
             --help)
-                print_status "${GREEN}" "Usage: $0 [--platform <current|minikube|k3s>] [--memory <MB>]"
+                print_status "${GREEN}" "Usage: $0 [--platform <current|minikube|k3s|kind>] [--memory <MB>]"
                 exit 0
                 ;;
             *)
